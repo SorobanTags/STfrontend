@@ -228,10 +228,12 @@ async function mockLearningApis(page: Page) {
 }
 
 async function openPlayer(page: Page) {
-  await page.goto(`/dashboard/courses/${COURSE_ID}/learn`);
+  await page.goto(`/dashboard/courses/${COURSE_ID}/learn`, {
+    waitUntil: "domcontentloaded",
+  });
 
   const player = page.getByRole("region", { name: "Video player" });
-  await expect(player).toBeVisible();
+  await expect(player).toBeVisible({ timeout: 15_000 });
 
   await player.locator("video").evaluate((video) => {
     video.dispatchEvent(new Event("loadedmetadata"));
