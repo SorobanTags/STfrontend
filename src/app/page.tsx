@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { TopBar } from "@/components/layout/TopBar";
 import { HeroSection } from "@/components/layout/HeroSection";
 import { PricingPlansSection } from "@/components/pricing/PricingPlansSection";
@@ -12,22 +13,8 @@ export const metadata: Metadata = buildMetadata({
   title: "SorobanLard",
   description:
     "Learn practical skills — tailoring, makeup, baking, photography and more. Africa's online vocational skills platform.",
-  openGraph: {
-    title: "SorobanLard",
-    description:
-      "Learn practical skills — tailoring, makeup, baking, photography and more. Africa's online vocational skills platform.",
-    url: "/",
-    siteName: "SorobanLard",
-    type: "website",
-    images: [{ url: DEFAULT_OG_IMAGE, alt: "SorobanLard brand preview" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "SorobanLard",
-    description:
-      "Learn practical skills — tailoring, makeup, baking, photography and more. Africa's online vocational skills platform.",
-    images: [DEFAULT_OG_IMAGE],
-  },
+  path: '/',
+  images: [DEFAULT_OG_IMAGE],
 });
 
 // Sample testimonials data
@@ -103,10 +90,12 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-[1280px] px-6 py-16 xl:px-10">
-        <PricingPlansSection
-          heading="Plans that support every stage of your learning journey"
-          intro="Students can start with the Free plan and upgrade when they want deeper tools, while instructors can unlock analytics and better learner engagement with Pro."
-        />
+        <Suspense fallback={null}>
+          <PricingPlansSection
+            heading="Plans that support every stage of your learning journey"
+            intro="Students can start with the Free plan and upgrade when they want deeper tools, while instructors can unlock analytics and better learner engagement with Pro."
+          />
+        </Suspense>
       </section>
     </div>
   );

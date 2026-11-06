@@ -1,6 +1,15 @@
 'use client';
 
 import { useMemo } from 'react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import dynamic from 'next/dynamic';
 import type { TooltipProps } from 'recharts';
 import { Download } from 'lucide-react';
@@ -27,14 +36,18 @@ interface RevenueChartProps {
 /**
  * Custom tooltip for the revenue chart showing formatted values
  */
-function CustomTooltip(props: TooltipProps<number, string>) {
-  const { active, payload } = props;
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: RevenueData }>;
+}
+
+function CustomTooltip({ active, payload }: CustomTooltipProps) {
 
   if (!active || !payload || !payload.length) {
     return null;
   }
 
-  const data = payload[0].payload as RevenueData;
+  const data = payload[0].payload;
 
   return (
     // bg-semantic-bg-surface adapts: #f8f8ff (light) → #16131f (dark)

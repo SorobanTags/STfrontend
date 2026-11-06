@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CountdownTimer } from './CountdownTimer';
 
@@ -8,7 +8,7 @@ describe('CountdownTimer', () => {
   });
 
   afterEach(() => {
-    vi.runOnlyPendingTimers();
+    vi.clearAllTimers();
     vi.useRealTimers();
   });
 
@@ -59,7 +59,7 @@ describe('CountdownTimer', () => {
       const { rerender } = render(<CountdownTimer expiresAt={futureDate} />);
 
       // Fast forward 1 second
-      vi.advanceTimersByTime(1000);
+      act(() => vi.advanceTimersByTime(1000));
       rerender(<CountdownTimer expiresAt={futureDate} />);
 
       // Timer should have updated (we can verify it didn't error)
@@ -72,7 +72,7 @@ describe('CountdownTimer', () => {
       render(<CountdownTimer expiresAt={futureDate} onExpire={onExpire} />);
 
       // Fast forward past expiration
-      vi.advanceTimersByTime(1100);
+      act(() => vi.advanceTimersByTime(1100));
 
       expect(onExpire).toHaveBeenCalled();
     });
@@ -82,7 +82,7 @@ describe('CountdownTimer', () => {
       render(<CountdownTimer expiresAt={futureDate} />);
 
       // Fast forward past expiration
-      vi.advanceTimersByTime(600);
+      act(() => vi.advanceTimersByTime(600));
 
       expect(screen.getByText('Offer ended')).toBeInTheDocument();
     });
@@ -92,7 +92,7 @@ describe('CountdownTimer', () => {
       render(<CountdownTimer expiresAt={futureDate} label="Sale ends in" />);
 
       // Fast forward past expiration
-      vi.advanceTimersByTime(600);
+      act(() => vi.advanceTimersByTime(600));
 
       expect(screen.queryByText('Sale ends in')).not.toBeInTheDocument();
       expect(screen.getByText('Offer ended')).toBeInTheDocument();
@@ -117,13 +117,13 @@ describe('CountdownTimer', () => {
       const { unmount } = render(<CountdownTimer expiresAt={futureDate} onExpire={onExpire} />);
 
       // Advance 2 seconds mid-countdown
-      vi.advanceTimersByTime(2000);
+      act(() => vi.advanceTimersByTime(2000));
 
       // Unmount component
       unmount();
 
       // Advance past expiration time
-      vi.advanceTimersByTime(5000);
+      act(() => vi.advanceTimersByTime(5000));
 
       // onExpire must not be called after unmount
       expect(onExpire).not.toHaveBeenCalled();
@@ -136,12 +136,12 @@ describe('CountdownTimer', () => {
       render(<CountdownTimer expiresAt={futureDate} onExpire={onExpire} />);
 
       // Advance past expiration
-      vi.advanceTimersByTime(2500);
+      act(() => vi.advanceTimersByTime(2500));
       expect(onExpire).toHaveBeenCalledTimes(1);
       expect(clearIntervalSpy).toHaveBeenCalled();
 
       // Advance further and verify onExpire is not called again
-      vi.advanceTimersByTime(3000);
+      act(() => vi.advanceTimersByTime(3000));
       expect(onExpire).toHaveBeenCalledTimes(1);
 
       clearIntervalSpy.mockRestore();

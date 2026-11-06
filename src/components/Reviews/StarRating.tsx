@@ -90,11 +90,13 @@ export default function StarRatingSelector() {
       case "ArrowUp":
         e.preventDefault();
         focusStar(i + 1);
+        setSel(Math.min(5, i + 1));
         break;
       case "ArrowLeft":
       case "ArrowDown":
         e.preventDefault();
         focusStar(i - 1);
+        setSel(Math.max(1, i - 1));
         break;
       case "Home":
         e.preventDefault();
@@ -294,6 +296,15 @@ export default function StarRatingSelector() {
 
           {/* Body */}
           <div style={{ padding: "1rem 1.5rem 1.25rem" }}>
+            <div
+              aria-live="polite"
+              style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 16 }}
+            >
+              <span style={{ fontSize: 28, fontWeight: 700, color: "#1a1a1a" }}>
+                {avgNum}
+              </span>
+              <span style={{ fontSize: 13, color: "#888" }}>{avgSub}</span>
+            </div>
             <p
               style={{
                 fontSize: 11,
@@ -321,6 +332,7 @@ export default function StarRatingSelector() {
                   }}
                 >
                   <span>{i}</span>
+                  <span aria-hidden="true">★</span>
                   <span>{pct}%</span>
                   {isSelected && <span>selected</span>}
                 </div>

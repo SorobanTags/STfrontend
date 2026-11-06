@@ -37,7 +37,7 @@ export default function InstructorApplicationForm() {
       {errors.expertiseArea && <p className="text-sm text-red-600">{errors.expertiseArea.message}</p>}
       <input type="url" placeholder="Linkedin or Portfolio URL" {...register('portfolioUrl')} className="w-full rounded-border p-2" />
       {errors.portfolioUrl && <p className="text-sm text-red-600">{errors.portfolioUrl.message}</p>}
-      <textarea placeholder="Brief bio" rows{4} {...register('bio')} className="w-full rounded-border p-2" />
+      <textarea placeholder="Brief bio" rows={4} {...register('bio')} className="w-full rounded-border p-2" />
       {errors.bio && <p className="text-sm text-red-600">{errors.bio.message}</p>}
       <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-white">Submit Application</button>
     </form>

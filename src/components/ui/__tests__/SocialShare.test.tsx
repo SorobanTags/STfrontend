@@ -39,8 +39,7 @@ describe('SocialShare', () => {
     fireEvent.click(screen.getByRole('button', { name: /linkedin/i }));
     const calledUrl = mockWindowOpen.mock.calls[0][0] as string;
     // Should contain the resolved absolute URL, not the raw relative path
-    expect(calledUrl).not.toContain('%2Fcertificates%2Fabc123');
-    expect(calledUrl).toContain('http%3A%2F%2Flocalhost%2Fcertificates%2Fabc123');
+    expect(calledUrl).toContain('http%3A%2F%2Flocalhost%3A3000%2Fcertificates%2Fabc123');
   });
 
   it('LinkedIn share link contains encoded absolute URL', () => {

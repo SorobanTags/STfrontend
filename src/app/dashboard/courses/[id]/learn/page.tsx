@@ -4,14 +4,17 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {
-  CheckCircle2, Circle, ChevronDown, ChevronRight,
-  Download, Loader2, ArrowLeft, Award, SkipForward,
+  CheckCircle2, Circle, ChevronDown, ChevronRight, Loader2, ArrowLeft,
+  MessageSquare, Download, SkipForward, Award,
 } from 'lucide-react';
 import Link from 'next/link';
 import { coursesApi, enrollmentsApi, lessonsApi } from '@/lib/api/services';
 import { formatDuration, cn } from '@/lib/utils';
 import CourseCompletionModal from '@/components/learn/CourseCompletionModal';
 import { AutoplayCountdown } from '@/components/learn/AutoplayCountdown';
+import NotesPanel from '@/components/learn/NotesPanel';
+import { QuizComponent } from '@/components/learn/QuizComponent';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import type { Course, Enrollment, Lesson } from '@/types';
 
 // ── Dynamic import: heavy client-only video player ─────────────────────────
@@ -29,20 +32,13 @@ const VideoPlayer = dynamic(
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const AUTOPLAY_STORAGE_KEY = 'sorobanlard:autoplay';
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-/** Returns the flat ordered list of all lessons across every module */
-function flatLessons(course: Course): Lesson[] {
-  return course.modules?.flatMap((m) => m.lessons) ?? [];
-}
-
-// ── Component ──────────────────────────────────────────────────────────────
+type SidebarTab = 'lessons' | 'notes' | 'qa';
 
 export default function LearnPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
   const requestedLessonId = searchParams.get("lesson");
 
   const [course, setCourse] = useState<Course | null>(null);
@@ -62,9 +58,18 @@ export default function LearnPage() {
   });
   const [showCountdown, setShowCountdown] = useState(false);
 
-  const progressRef = useRef<NodeJS.Timeout | null>(null);
   const previousCompletedCountRef = useRef<number | null>(null);
-  const hasInitializedCompletionState = useRef(false);
+  const hasInitializedCompletionStateRef = useRef(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const selectLesson = useCallback((lesson: Lesson) => {
+    setShowCountdown(false);
+    setActiveLesson(lesson);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('lesson', lesson.id);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   // ── Derived: next lesson ─────────────────────────────────────────────────
   const nextLesson = useMemo<Lesson | null>(() => {
@@ -95,9 +100,8 @@ export default function LearnPage() {
   // ── Navigate to next lecture ─────────────────────────────────────────────
   const goToNext = useCallback(() => {
     if (!nextLesson) return;
-    setShowCountdown(false);
-    setActiveLesson(nextLesson);
-  }, [nextLesson]);
+    selectLesson(nextLesson);
+  }, [nextLesson, selectLesson]);
 
   const cancelCountdown = useCallback(() => {
     setShowCountdown(false);
@@ -119,13 +123,13 @@ export default function LearnPage() {
         e.lessonProgress?.filter((p: { completed: boolean }) => p.completed).map((p: { lessonId: string }) => p.lessonId),
       );
       const first = allLessons.find((l) => !completedIds.has(l.id)) ?? allLessons[0];
-      if (first) setActiveLesson(first);
+      const requestedLesson = allLessons.find((lesson) => lesson.id === requestedLessonId);
+      if (requestedLesson || first) setActiveLesson(requestedLesson ?? first);
     })
     .catch(console.error)
     .finally(() => setLoading(false));
 
-    return () => { if (progressRef.current) clearInterval(progressRef.current); };
-  }, [id]);
+  }, [id, requestedLessonId]);
 
   // ── Course completion detection ──────────────────────────────────────────
   useEffect(() => {
@@ -141,7 +145,7 @@ export default function LearnPage() {
       hasInitializedCompletionStateRef.current && previouslyIncomplete && isComplete;
 
     previousCompletedCountRef.current = completedCount;
-    hasInitializedCompletionState.current = true;
+    hasInitializedCompletionStateRef.current = true;
 
     if (!isComplete) {
       setShowCompletionModal(false);

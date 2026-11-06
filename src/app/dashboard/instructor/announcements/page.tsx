@@ -249,7 +249,7 @@ export default function InstructorAnnouncementsPage() {
             )}
           >
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink-700">
+              <label htmlFor="announcement-course" className="mb-1 block text-sm font-medium text-ink-700">
                 Course
               </label>
               {loadingCourses ? (
@@ -260,6 +260,7 @@ export default function InstructorAnnouncementsPage() {
               ) : (
                 <>
                   <select
+                    id="announcement-course"
                     {...register("courseId")}
                     className="w-full rounded-xl border border-ink-200 bg-white px-3 py-3 text-sm text-ink-900 outline-none"
                   >
@@ -279,10 +280,11 @@ export default function InstructorAnnouncementsPage() {
               )}
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink-700">
+              <label htmlFor="announcement-subject" className="mb-1 block text-sm font-medium text-ink-700">
                 Subject
               </label>
               <input
+                id="announcement-subject"
                 {...register("subject")}
                 placeholder="Lesson reminder, schedule change, new resource..."
                 className="w-full rounded-xl border border-ink-200 bg-white px-3 py-3 text-sm text-ink-900 outline-none"
@@ -294,10 +296,11 @@ export default function InstructorAnnouncementsPage() {
               )}
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink-700">
+              <label htmlFor="announcement-message" className="mb-1 block text-sm font-medium text-ink-700">
                 Message
               </label>
               <textarea
+                id="announcement-message"
                 {...register("message")}
                 rows={7}
                 placeholder="Write a clear announcement for your students..."
@@ -310,11 +313,12 @@ export default function InstructorAnnouncementsPage() {
               )}
             </div>
             <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3">
-              <label className="mb-1 flex items-center gap-2 text-sm font-medium text-ink-700">
+              <label htmlFor="announcement-schedule" className="mb-1 flex items-center gap-2 text-sm font-medium text-ink-700">
                 <CalendarClock className="h-4 w-4 text-blue-600" />
                 Schedule for later
               </label>
               <input
+                id="announcement-schedule"
                 type="datetime-local"
                 value={scheduledFor}
                 min={toDateTimeInput(new Date().toISOString())}

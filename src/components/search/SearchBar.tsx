@@ -64,7 +64,7 @@ export function SearchBar({
     recentSearches,
     savedSearches,
     addRecentSearch,
-    clearRecentSearches,
+    clearHistory,
     saveSearch,
     removeSavedSearch,
   } = useSearchStore();
@@ -154,7 +154,7 @@ export function SearchBar({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (localQuery.trim()) {
-      addRecentSearch(localQuery);
+      addRecentSearch();
       onSearch?.(localQuery);
       router.push(`/search?q=${encodeURIComponent(localQuery)}`);
       setIsOpen(false);
@@ -167,12 +167,12 @@ export function SearchBar({
     } else if (suggestion.type === 'instructor') {
       setLocalQuery(suggestion.label);
       setQuery(suggestion.label);
-      addRecentSearch(suggestion.label);
+      addRecentSearch();
       router.push(`/search?q=${encodeURIComponent(suggestion.label)}`);
     } else {
       setLocalQuery(suggestion.label);
       setQuery(suggestion.label);
-      addRecentSearch(suggestion.label);
+      addRecentSearch();
       router.push(`/search?category=${encodeURIComponent(suggestion.label)}`);
     }
     setIsOpen(false);
@@ -181,7 +181,7 @@ export function SearchBar({
   const handleTrendingSelect = (category: string) => {
     setLocalQuery(category);
     setQuery(category);
-    addRecentSearch(category);
+    addRecentSearch();
     router.push(`/search?category=${encodeURIComponent(category)}`);
     setIsOpen(false);
   };
@@ -189,7 +189,7 @@ export function SearchBar({
   const handleRecentSelect = (recentQuery: string) => {
     setLocalQuery(recentQuery);
     setQuery(recentQuery);
-    addRecentSearch(recentQuery);
+    addRecentSearch();
     onSearch?.(recentQuery);
     router.push(`/search?q=${encodeURIComponent(recentQuery)}`);
     setIsOpen(false);
@@ -198,7 +198,7 @@ export function SearchBar({
   const handleSavedSelect = (saved: { query: string; filters?: Record<string, string> }) => {
     setLocalQuery(saved.query);
     setQuery(saved.query);
-    addRecentSearch(saved.query);
+    addRecentSearch();
     onSearch?.(saved.query);
     const params = new URLSearchParams({ q: saved.query });
     if (saved.filters) {
@@ -315,7 +315,7 @@ export function SearchBar({
                   </span>
                   <button
                     type="button"
-                    onClick={clearRecentSearches}
+                    onClick={clearHistory}
                     className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
                   >
                     <Trash2 className="h-3 w-3" />
@@ -324,13 +324,13 @@ export function SearchBar({
                 </div>
                 {recentSearches.slice(0, 5).map((recent) => (
                   <button
-                    key={recent}
+                    key={recent.timestamp}
                     type="button"
-                    onClick={() => handleRecentSelect(recent)}
+                    onClick={() => handleRecentSelect(recent.query)}
                     className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-ink-700 transition-colors hover:bg-ink-50"
                   >
                     <Clock className="h-3.5 w-3.5 text-ink-400" />
-                    <span className="truncate">{recent}</span>
+                    <span className="truncate">{recent.query}</span>
                   </button>
                 ))}
               </div>

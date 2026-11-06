@@ -174,7 +174,7 @@ export function CourseBrowser({ showFilters = true }: Props) {
           {/* End-of-list message */}
           {!hasMore && !loadingMore && (
             <p className="text-center text-sm text-ink-400 py-8 select-none">
-              You've seen all courses
+              You&apos;ve seen all courses
             </p>
           )}
 

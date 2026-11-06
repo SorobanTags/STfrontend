@@ -10,7 +10,6 @@ import { RouteAnnouncer } from '@/components/ui/RouteAnnouncer';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: 'SorobanLard', template: '%s | SorobanLard' },
-  description: siteConfig.description,
   applicationName: siteConfig.name,
   keywords: [
     'online courses',
@@ -22,8 +21,6 @@ export const metadata: Metadata = {
     'Africa e-learning',
     'SorobanLard',
   ],
-  description: 'Learn practical skills — tailoring, makeup, baking, photography and more. Africa\'s online vocational skills platform.',
-  metadataBase: new URL('https://sorobanlard.app'),
   icons: { icon: '/favicon.svg' },
   alternates: { canonical: siteUrl },
   openGraph: {

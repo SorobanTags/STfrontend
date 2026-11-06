@@ -161,7 +161,9 @@ export function CourseCardGrid({
         }}
       >
         {loading
-          ? visibleItems.map((i) => <CourseCardSkeleton key={i} />)
+          ? Array.from({ length: Math.max(0, endIndex - startIndex) }, (_, i) => startIndex + i).map((i) => (
+              <CourseCardSkeleton key={i} />
+            ))
           : (visibleItems as Course[]).map((course, index) => (
               <CourseCard
                 key={course.id}

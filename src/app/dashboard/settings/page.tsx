@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Bell, Shield, Save, Loader2, Trash2, CreditCard, ChevronRight } from 'lucide-react';
+import { Bell, Shield, Save, Loader2, Trash2, CreditCard, ChevronRight, Zap } from 'lucide-react';
 import { Breadcrumb } from '@/components/ui';
 import DeleteAccountModal from '@/components/auth/DeleteAccountModal';
-import { Bell, Shield, Save, Loader2, Zap } from 'lucide-react';
-import { Breadcrumb } from '@/components/ui';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
-import { twoFactorApi } from '@/lib/api/services';
+import { twoFactorApi, usersApi } from '@/lib/api/services';
+import { useToast } from '@/lib/hooks/use-toast';
+import { useReducedMotion } from '@/lib/hooks/use-reduced-motion';
 
 export default function SettingsPage() {
   const toast = useToast();
@@ -138,31 +138,33 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <label className="flex items-start gap-3 cursor-pointer">
+            <div className="flex items-start gap-3">
               <input
+                id="email-updates"
                 type="checkbox"
                 checked={emailUpdates}
                 onChange={(e) => setEmailUpdates(e.target.checked)}
                 className="mt-1"
               />
-              <span>
-                <p className="text-sm font-medium text-ink-900">Email updates</p>
+              <div>
+                <label htmlFor="email-updates" className="block cursor-pointer text-sm font-medium text-ink-900">Email updates</label>
                 <p className="text-xs text-ink-500">Product news and announcements.</p>
-              </span>
-            </label>
+              </div>
+            </div>
 
-            <label className="flex items-start gap-3 cursor-pointer">
+            <div className="flex items-start gap-3">
               <input
+                id="course-updates"
                 type="checkbox"
                 checked={courseUpdates}
                 onChange={(e) => setCourseUpdates(e.target.checked)}
                 className="mt-1"
               />
-              <span>
-                <p className="text-sm font-medium text-ink-900">Course updates</p>
+              <div>
+                <label htmlFor="course-updates" className="block cursor-pointer text-sm font-medium text-ink-900">Course updates</label>
                 <p className="text-xs text-ink-500">New lessons and reminders.</p>
-              </span>
-            </label>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -174,18 +176,21 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <label className="flex items-start gap-3 cursor-pointer">
+            <div className="flex items-start gap-3">
               <input
+                id="security-alerts"
                 type="checkbox"
                 checked={securityAlerts}
                 onChange={(e) => setSecurityAlerts(e.target.checked)}
                 className="mt-1"
               />
-              <span>
-                <p className="text-sm font-medium text-ink-900">Security alerts</p>
+              <div>
+                <label htmlFor="security-alerts" className="block cursor-pointer text-sm font-medium text-ink-900">
+                  Security alerts
+                </label>
                 <p className="text-xs text-ink-500">Sign-in and account change alerts.</p>
-              </span>
-            </label>
+              </div>
+            </div>
 
             <div className="rounded-xl border border-ink-100 bg-ink-50 p-3">
               <p className="text-xs text-ink-500">
@@ -271,4 +276,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

@@ -45,7 +45,7 @@ export default function HelpPage() {
             href="/contact"
             className="mt-6 inline-block rounded-xl bg-[#7F77DD] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#3C3489]"
           >
-            Can't find what you need? Contact us
+            Can&apos;t find what you need? Contact us
           </a>
         </section>
 

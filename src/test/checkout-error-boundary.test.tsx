@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { CheckoutErrorBoundary } from '@/components/cart/CheckoutErrorBoundary';
 
@@ -20,18 +20,25 @@ function CheckoutHarness() {
 describe('CheckoutErrorBoundary', () => {
   it('shows recovery actions and restarts checkout at step one', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<CheckoutHarness />);
+    vi.useFakeTimers();
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Your cart is safe');
-    expect(screen.getByRole('link', { name: /contact support/i })).toHaveAttribute(
-      'href',
-      '/help',
-    );
+    try {
+      render(<CheckoutHarness />);
 
-    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+      expect(screen.getByRole('alert')).toHaveTextContent('Your cart is safe');
+      expect(screen.getByRole('link', { name: /contact support/i })).toHaveAttribute(
+        'href',
+        '/help',
+      );
 
-    expect(screen.getByText('Checkout step 1')).toBeInTheDocument();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    consoleError.mockRestore();
+      fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+      act(() => vi.advanceTimersByTime(1000));
+
+      expect(screen.getByText('Checkout step 1')).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+      consoleError.mockRestore();
+    }
   });
 });

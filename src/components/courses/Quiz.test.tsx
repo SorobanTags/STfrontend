@@ -84,7 +84,8 @@ describe("Quiz", () => {
         vi.advanceTimersByTime(5_000);
       });
 
-      expect(screen.getByText(/You scored 1 out of 3/)).toBeInTheDocument();
+      expect(screen.getByText('Correct').previousElementSibling).toHaveTextContent('1');
+      expect(screen.getByText('Incorrect').previousElementSibling).toHaveTextContent('2');
       expect(onComplete).toHaveBeenCalledWith(1, 3, false);
     } finally {
       vi.useRealTimers();

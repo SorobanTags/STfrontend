@@ -197,7 +197,7 @@ export function CookieConsentBanner() {
                 const isDisabled = option.key === 'necessary';
 
                 return (
-                  <label
+                  <div
                     key={option.key}
                     className="flex items-start justify-between gap-4 rounded-2xl border border-[#D5D2F6] bg-[#FAF9FF] p-4"
                   >
@@ -228,7 +228,7 @@ export function CookieConsentBanner() {
                         className={`inline-block h-5 w-5 rounded-full bg-white shadow transition ${checked ? 'translate-x-6' : 'translate-x-1'}`}
                       />
                     </button>
-                  </label>
+                  </div>
                 );
               })}
             </div>

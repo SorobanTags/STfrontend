@@ -84,7 +84,7 @@ export class CheckoutErrorBoundary extends React.Component<
             resetKey: prev.resetKey + 1,
           };
         }
-        return { waitSecondsLeft: prev.waitSecondsLeft - 1 };
+        return { ...prev, waitSecondsLeft: prev.waitSecondsLeft - 1 };
       });
     }, 1000);
   };

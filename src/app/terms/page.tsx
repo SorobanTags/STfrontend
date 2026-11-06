@@ -25,7 +25,7 @@ export default function TermsPage() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveSection(entry.id);
+            setActiveSection((entry.target as HTMLElement).id);
           }
         });
       },
@@ -88,7 +88,7 @@ export default function TermsPage() {
             <section id="overview" className="scroll-mt-24">
               <h2 className="text-2xl font-semibold text-[#26215C]">Overview</h2>
               <p className="text-[#5A5578]">
-                Welcome to SorobanLard. These Terms of Service ("Terms") govern your access to and use of the SorobanLard platform, website, and services (collectively, the "Service"). By accessing or using SorobanLard, you agree to be bound by these Terms. If you do not agree to any part of these Terms, you may not use the Service.
+                Welcome to SorobanLard. These Terms of Service (&quot;Terms&quot;) govern your access to and use of the SorobanLard platform, website, and services (collectively, the &quot;Service&quot;). By accessing or using SorobanLard, you agree to be bound by these Terms. If you do not agree to any part of these Terms, you may not use the Service.
               </p>
               <p className="text-[#5A5578]">
                 SorobanLard is an online learning platform that provides vocational courses in tailoring, makeup artistry, baking, photography, and other practical skills to learners across Africa.

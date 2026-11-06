@@ -238,7 +238,9 @@ export function FilterSidebar({
       {open && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           {/* Backdrop */}
-          <div
+          <button
+            type="button"
+            aria-label="Close filters"
             className="absolute inset-0 bg-black/40"
             onClick={onClose}
           />

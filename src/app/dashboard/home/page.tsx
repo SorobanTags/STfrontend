@@ -116,7 +116,7 @@ function CourseGridSection() {
   );
 }
 
-export function DashboardContent() {
+function DashboardContent() {
   const { user } = useAuthStore();
   const [userName, setUserName] = useState(user?.name ?? 'Student');
 
@@ -145,7 +145,7 @@ export function DashboardContent() {
               <div>
                 <h1 className="text-2xl font-semibold">Welcome back, {userName}</h1>
                 <p className="text-sm text-ink-500 mt-0.5">
-                  Here's what's happening with your learning
+                  Here&apos;s what&apos;s happening with your learning
                 </p>
               </div>
             </div>

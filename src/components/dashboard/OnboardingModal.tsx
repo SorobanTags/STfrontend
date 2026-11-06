@@ -148,7 +148,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                 Welcome to SorobanLard
               </h1>
               <p className="text-lg text-ink-600">
-                Let's get started on your learning journey
+                Let&apos;s get started on your learning journey
               </p>
               <p className="text-sm text-ink-500">
                 Discover thousands of practical skills courses from expert instructors
@@ -222,7 +222,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
             <div className="text-center space-y-6">
               <div className="text-6xl mb-4 animate-bounce">🎉</div>
               <h2 className="font-display text-3xl font-bold text-ink-900">
-                You're All Set!
+                You&apos;re All Set!
               </h2>
               <p className="text-lg text-ink-600">
                 Get ready to discover amazing courses

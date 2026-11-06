@@ -39,7 +39,7 @@ export default function Error({ error, reset }: ErrorBoundaryProps) {
         </h1>
 
         <p className="text-slate-300 mb-8 text-sm sm:text-base leading-relaxed">
-          An unexpected server error occurred while processing your request. Don't worry — our team has been notified. You can try refreshing the page or navigating back home.
+          An unexpected server error occurred while processing your request. Don&apos;t worry — our team has been notified. You can try refreshing the page or navigating back home.
         </p>
 
         {/* Action Buttons */}

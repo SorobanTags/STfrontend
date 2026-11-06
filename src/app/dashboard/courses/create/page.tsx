@@ -118,14 +118,15 @@ export default function CreateCoursePage() {
           <h2 className="text-sm font-semibold text-ink-900 mb-4">Course details</h2>
           <div className="space-y-4">
             <div>
-              <label className="label">Course ID</label>
-              <input value={courseId} readOnly
+              <label htmlFor="course-id" className="label">Course ID</label>
+              <input id="course-id" value={courseId} readOnly
                 className="input bg-ink-50 text-ink-400 font-mono text-xs" />
               <p className="text-xs text-ink-400 mt-1">Auto-generated unique identifier</p>
             </div>
             <div>
-              <label className="label">Course title <span className="text-red-500">*</span></label>
+              <label htmlFor="course-title" className="label">Course title <span className="text-red-500">*</span></label>
               <input
+                id="course-title"
                 placeholder="e.g. Professional Tailoring from Scratch"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -134,8 +135,9 @@ export default function CreateCoursePage() {
               />
             </div>
             <div>
-              <label className="label">Description</label>
+              <label htmlFor="course-description" className="label">Description</label>
               <textarea
+                id="course-description"
                 placeholder="What will students learn in this course?"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -145,8 +147,9 @@ export default function CreateCoursePage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label">Category <span className="text-red-500">*</span></label>
+                <label htmlFor="course-category" className="label">Category <span className="text-red-500">*</span></label>
                 <select
+                  id="course-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   required
@@ -159,8 +162,8 @@ export default function CreateCoursePage() {
                 </select>
               </div>
               <div>
-                <label className="label">Level</label>
-                <select value={level} onChange={(e) => setLevel(e.target.value)} className="select">
+                <label htmlFor="course-level" className="label">Level</label>
+                <select id="course-level" value={level} onChange={(e) => setLevel(e.target.value)} className="select">
                   <option>Beginner</option>
                   <option>Intermediate</option>
                   <option>Advanced</option>
@@ -168,8 +171,8 @@ export default function CreateCoursePage() {
               </div>
             </div>
             <div>
-              <label className="label">Language</label>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="select">
+              <label htmlFor="course-language" className="label">Language</label>
+              <select id="course-language" value={language} onChange={(e) => setLanguage(e.target.value)} className="select">
                 <option>English</option>
                 <option>Yoruba</option>
                 <option>Hausa</option>
@@ -231,10 +234,11 @@ export default function CreateCoursePage() {
         <div className="card p-5">
           <h2 className="text-sm font-semibold text-ink-900 mb-4">Pricing</h2>
           <div>
-            <label className="label">Course price (USDC) <span className="text-red-500">*</span></label>
+            <label htmlFor="course-price" className="label">Course price (USDC) <span className="text-red-500">*</span></label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium text-ink-400">$</span>
               <input
+                id="course-price"
                 type="number"
                 min="0"
                 step="0.01"

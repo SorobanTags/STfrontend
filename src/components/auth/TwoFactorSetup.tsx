@@ -129,7 +129,7 @@ export function TwoFactorSetup() {
     return (
       <div className="space-y-4">
         <p className="text-sm text-[#5A5578]">
-          Add an extra layer of security to your account. Once enabled, you'll need your authenticator app in addition to your password to sign in.
+          Add an extra layer of security to your account. Once enabled, you&apos;ll need your authenticator app in addition to your password to sign in.
         </p>
         <button
           onClick={handleEnable}

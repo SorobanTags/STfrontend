@@ -26,6 +26,8 @@ const CountdownTimer = React.forwardRef<HTMLDivElement, CountdownTimerProps>(
     useEffect(() => {
       let isMounted = true;
       let interval: ReturnType<typeof setInterval> | null = null;
+      let expirationTimeout: ReturnType<typeof setTimeout> | null = null;
+      let hasExpired = false;
       setMounted(true);
 
       const calculateTimeRemaining = () => {
@@ -34,9 +36,15 @@ const CountdownTimer = React.forwardRef<HTMLDivElement, CountdownTimerProps>(
         const difference = expiresAt.getTime() - now.getTime();
 
         if (difference <= 0) {
+          if (hasExpired) return;
+          hasExpired = true;
           if (interval !== null) {
             clearInterval(interval);
             interval = null;
+          }
+          if (expirationTimeout !== null) {
+            clearTimeout(expirationTimeout);
+            expirationTimeout = null;
           }
           setIsExpired(true);
           setTime({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -60,6 +68,7 @@ const CountdownTimer = React.forwardRef<HTMLDivElement, CountdownTimerProps>(
       const initialRemaining = expiresAt.getTime() - new Date().getTime();
       if (initialRemaining > 0) {
         interval = setInterval(calculateTimeRemaining, 1000);
+        expirationTimeout = setTimeout(calculateTimeRemaining, initialRemaining);
       }
 
       return () => {
@@ -67,6 +76,10 @@ const CountdownTimer = React.forwardRef<HTMLDivElement, CountdownTimerProps>(
         if (interval !== null) {
           clearInterval(interval);
           interval = null;
+        }
+        if (expirationTimeout !== null) {
+          clearTimeout(expirationTimeout);
+          expirationTimeout = null;
         }
       };
     }, [expiresAt, onExpire]);

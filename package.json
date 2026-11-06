@@ -9,7 +9,7 @@
     "start": "next start --port 3001",
     "lint": "next lint",
     "test": "vitest run",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=chromium --project=firefox --project=webkit --project=mobile-chrome --project=mobile-safari",
     "test:e2e:ui": "playwright test --ui",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
   },
@@ -29,6 +29,7 @@
     "next": "14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
+    "recharts": "^3.10.1",
     "react-hook-form": "^7.90.0",
     "tailwind-merge": "^2.2.0",
     "zod": "^4.6.7",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "@testing-library/jest-dom": "^7.0.0",
+    "@types/canvas-confetti": "^1.9.0",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
     "@types/node": "^20.0.0",

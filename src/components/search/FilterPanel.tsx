@@ -162,7 +162,6 @@ function PriceRangeSlider({ value, onChange }: PriceRangeSliderProps) {
         />
         <input
           type="range"
-          role="slider"
           min={PRICE_SLIDER_MIN}
           max={PRICE_SLIDER_MAX}
           step={PRICE_SLIDER_STEP}
@@ -176,7 +175,6 @@ function PriceRangeSlider({ value, onChange }: PriceRangeSliderProps) {
         />
         <input
           type="range"
-          role="slider"
           min={PRICE_SLIDER_MIN}
           max={PRICE_SLIDER_MAX}
           step={PRICE_SLIDER_STEP}

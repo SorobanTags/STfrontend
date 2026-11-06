@@ -247,7 +247,7 @@ export function NotificationDropdown() {
               /* Empty state */
               <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
                 <Bell className="h-8 w-8 text-white/20" />
-                <p className="text-sm text-white/50">You're all caught up!</p>
+                <p className="text-sm text-white/50">You&apos;re all caught up!</p>
                 <p className="text-xs text-white/30">No notifications yet.</p>
               </div>
             ) : (

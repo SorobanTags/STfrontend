@@ -1,10 +1,6 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { ShoppingBag, X, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
-import React, { useState} from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, X, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
@@ -19,14 +15,15 @@ interface ShoppingCartProps {
   onClose?: () => void;
 }
 
-export function ShoppingCart({ isOpen = true, onClose }: ShoppingCartProps) {
+function ShoppingCartContent({ isOpen = true, onClose }: ShoppingCartProps) {
   const router = useRouter();
   const { items, removeItem, clearCart, getTotalPrice } = useCartStore();
-function ShoppingCartContent({ isOpen = true, onClose }: ShoppingCartProps) {
-  const { items, removeItem, clearCart, getTotalPrice } = useCartStore();
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [promoCode, setPromoCode] = useState('');
-  const [appliedPromo, setAppliedPromo] = useState<any>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discountType: 'PERCENTAGE' | 'FIXED';
+    discountValue: number;
+  } | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
 
@@ -71,6 +68,11 @@ function ShoppingCartContent({ isOpen = true, onClose }: ShoppingCartProps) {
     setAppliedPromo(null);
     setPromoCode('');
     setPromoError(null);
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    handleRemovePromo();
   };
 
   if (!isOpen) return null;
@@ -188,7 +190,7 @@ function ShoppingCartContent({ isOpen = true, onClose }: ShoppingCartProps) {
                 />
                 <button
                   onClick={handleApplyPromo}
-                  disabled={isValidatingPromo || !promoCode.trim()}
+                  disabled={isValidatingPromo}
                   className="px-3 py-2 text-sm font-medium bg-sorobanlard-primary text-white rounded-lg hover:bg-sorobanlard-mid disabled:bg-ink-200 disabled:cursor-not-allowed transition-colors"
                 >
                   {isValidatingPromo ? (
@@ -251,17 +253,6 @@ function ShoppingCartContent({ isOpen = true, onClose }: ShoppingCartProps) {
             </div>
 
             {/* Action Buttons */}
-            <Link href="/checkout">
-              <Button
-                fullWidth
-                variant="primary"
-                size="lg"
-                icon={<ArrowRight className="w-4 h-4" />}
-                iconPosition="right"
-              >
-                Proceed to Checkout
-              </Button>
-            </Link>
             <Button
               fullWidth
               variant="primary"
@@ -274,7 +265,7 @@ function ShoppingCartContent({ isOpen = true, onClose }: ShoppingCartProps) {
             </Button>
 
             <button
-              onClick={clearCart}
+              onClick={handleClearCart}
               className="w-full mt-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               Clear Cart
