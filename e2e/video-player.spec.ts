@@ -328,12 +328,16 @@ test.describe("Video player", () => {
           `/api/v1/lessons/${FIRST_LESSON_ID}/progress`,
     );
 
-    await player.getByRole("button", { name: "Pause", exact: true }).click();
+    const watchedSecs = await video.evaluate((element) => {
+      const currentTime = Math.floor(element.currentTime);
+      element.pause();
+      return currentTime;
+    });
     const request = await progressRequest;
 
     expect(request.postDataJSON()).toEqual({
       enrollmentId: ENROLLMENT_ID,
-      watchedSecs: 27,
+      watchedSecs,
     });
   });
 

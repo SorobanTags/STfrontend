@@ -23,20 +23,45 @@ test.describe('Course details', () => {
 
 test.describe('Course listing', () => {
   test('loads and displays available courses', async ({ page }) => {
-    await page.route('**/api/v1/courses/categories', async (route) => {
+    await page.route('**/*', async (route) => {
+      const { pathname } = new URL(route.request().url());
+      const corsHeaders = {
+        'access-control-allow-origin': '*',
+        'access-control-allow-methods': 'GET, OPTIONS',
+        'access-control-allow-headers': 'Content-Type',
+      };
+
+      if (
+        (pathname === '/api/v1/courses/categories' ||
+          pathname === '/api/v1/courses') &&
+        route.request().method() === 'OPTIONS'
+      ) {
+        await route.fulfill({ status: 204, headers: corsHeaders });
+        return;
+      }
+
+      if (pathname === '/api/v1/courses/categories') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          headers: corsHeaders,
+          body: JSON.stringify({
+            success: true,
+            data: [{ name: 'Web Development', count: 1 }],
+          }),
+        });
+        return;
+      }
+
+      if (pathname !== '/api/v1/courses') {
+        await route.continue();
+        return;
+      }
+
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          data: [{ name: 'Web Development', count: 1 }],
-        }),
-      });
-    });
-    await page.route('**/api/v1/courses?**', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
+        headers: corsHeaders,
         body: JSON.stringify({
           success: true,
           data: {

@@ -82,18 +82,11 @@ npm run test
 
 ### End-to-End Tests (Playwright)
 
-For the stable CI gate, the repository runs the functional E2E suite on Chromium
-only. Cross-browser Playwright runs remain available locally for broader smoke
-coverage:
+Run the functional E2E suite across desktop Chromium, Firefox, and WebKit, plus
+mobile Chrome and Safari:
 
 ```bash
-npm run test:e2e:ci
-```
-
-Run the full browser matrix locally:
-
-```bash
-npm run test:e2e:full
+npm run test:e2e
 ```
 
 Open the Playwright UI for interactive test authoring and debugging:
@@ -131,7 +124,7 @@ Then commit the updated files in `e2e/screenshots/` to the repository.
 
 #### CI Integration
 
-Functional E2E tests run automatically in GitHub Actions on every push and pull request using the Chromium project. When visual baselines are available, run the visual project separately. Failed E2E runs upload:
+Functional E2E tests run automatically in GitHub Actions on every push and pull request across the browser matrix. When visual baselines are available, run the visual project separately. Failed E2E runs upload:
 - The Playwright HTML report (with side-by-side diffs)
 - Test traces for debugging
 
