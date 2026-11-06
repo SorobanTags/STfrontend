@@ -77,7 +77,10 @@ export function QuizComponent({
   const question = orderedQuestions[currentIndex];
   const isLastQuestion = currentIndex === total - 1;
   const options = question ? normalizeOptions(question) : [];
-  const selected = question ? (answers[question.id] ?? []) : [];
+  const selected = useMemo(
+    () => (question ? (answers[question.id] ?? []) : []),
+    [question, answers],
+  );
   const isSubmitted = question ? Boolean(submitted[question.id]) : false;
   const correct = question ? isAnswerCorrect(question, selected) : false;
   const answered = selected.length > 0;

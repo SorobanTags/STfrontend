@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { BookOpen, Check, Eye, Plus, Trash2 } from 'lucide-react';
 import { BulkActionBar, type BulkActionType } from '@/components/instructor/BulkActionBar';
@@ -20,7 +20,7 @@ export default function InstructorCoursesPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const toast = useToastContext();
 
-  const loadCourses = async () => {
+  const loadCourses = useCallback(async () => {
     try {
       const stats = await usersApi.getInstructorStats();
       setCourses(stats?.courses ?? []);
@@ -36,11 +36,11 @@ export default function InstructorCoursesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     loadCourses();
-  }, []);
+  }, [loadCourses]);
 
   const allSelected = courses.length > 0 && selectedIds.length === courses.length;
   const selectedCourses = useMemo(

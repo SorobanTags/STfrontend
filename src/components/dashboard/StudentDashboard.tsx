@@ -54,7 +54,7 @@ export function StudentDashboard({
             <div>
               <h1 className="text-2xl font-semibold">Welcome back, {name}</h1>
               <p className="text-sm text-ink-500 mt-0.5">
-                Here's what's happening with your learning
+                Here&apos;s what&apos;s happening with your learning
               </p>
             </div>
           </div>

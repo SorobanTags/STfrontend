@@ -312,7 +312,7 @@ export function Footer() {
 
 function SocialRow() {
   return (
-    <div className="flex items-center gap-3" role="list" aria-label="Social media links">
+    <div className="flex items-center gap-3" role="group" aria-label="Social media links">
       {SOCIAL_LINKS.map((social) => (
         <a
           key={social.label}
@@ -320,7 +320,6 @@ function SocialRow() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Follow SorobanLard on ${social.label}`}
-          role="listitem"
           className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 transition hover:border-[#7F77DD] hover:bg-[#7F77DD]/20 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7F77DD]"
         >
           <svg

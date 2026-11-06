@@ -284,6 +284,7 @@ export function PaymentForm({
                 type="radio"
                 name="payment-method"
                 value={option.value}
+                aria-label={option.label}
                 checked={method === option.value}
                 onChange={() => {
                   setMethod(option.value);

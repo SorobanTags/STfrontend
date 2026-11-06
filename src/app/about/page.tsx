@@ -108,7 +108,7 @@ export default function AboutPage() {
               Our founders saw this challenge and built SorobanLard as the bridge. We started by connecting a handful of talented instructors with curious learners in Lagos, Accra, and Nairobi. Today, we serve learners across 25+ African countries.
             </p>
             <p>
-              We're committed to making quality vocational education accessible, affordable, and recognized globally through blockchain-verified certificates. Every course on SorobanLard is designed to turn aspiration into action.
+              We&apos;re committed to making quality vocational education accessible, affordable, and recognized globally through blockchain-verified certificates. Every course on SorobanLard is designed to turn aspiration into action.
             </p>
           </div>
         </div>
@@ -199,7 +199,7 @@ export default function AboutPage() {
             Talented people on a mission
           </h2>
           <p className="mt-4 text-lg text-[#5A5578] max-w-2xl mx-auto">
-            We're a small, focused team of education innovators, engineers, and creators building the future of vocational learning.
+            We&apos;re a small, focused team of education innovators, engineers, and creators building the future of vocational learning.
           </p>
         </div>
 
@@ -213,7 +213,7 @@ export default function AboutPage() {
             Ready to join us?
           </h2>
           <p className="mt-4 text-lg leading-8 text-[#EEEDFE]">
-            Whether you're eager to learn new skills or ready to teach, we'd love to have you as part of the SorobanLard community.
+            Whether you&apos;re eager to learn new skills or ready to teach, we&apos;d love to have you as part of the SorobanLard community.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">

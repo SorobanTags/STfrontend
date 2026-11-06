@@ -77,10 +77,11 @@ export default function NotificationsPage() {
       ) : (
         <div className="card divide-y divide-ink-50">
           {notifications.map((n) => (
-            <div
+            <button
+              type="button"
               key={n.id}
               onClick={() => !n.read && handleMarkRead(n.id)}
-              className={`p-4 flex items-start gap-3 transition-colors ${
+              className={`w-full p-4 flex items-start gap-3 text-left transition-colors ${
                 n.read ? 'opacity-60' : 'cursor-pointer hover:bg-ink-50'
               }`}
             >
@@ -99,7 +100,7 @@ export default function NotificationsPage() {
                 <p className="text-xs text-ink-500 leading-relaxed">{n.message}</p>
                 <p className="text-[10px] text-ink-400 mt-1">{timeAgo(n.createdAt)}</p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

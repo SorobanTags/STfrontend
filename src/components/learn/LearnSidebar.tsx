@@ -340,7 +340,9 @@ export function LearnSidebar({
 
         {/* Overlay */}
         {drawerOpen && (
-          <div
+          <button
+            type="button"
+            aria-label="Close curriculum"
             className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity"
             onClick={() => setDrawerOpen(false)}
           />

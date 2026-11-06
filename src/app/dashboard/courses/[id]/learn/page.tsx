@@ -1,10 +1,10 @@
 ﻿"use client";
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
-  CheckCircle2, Circle, ChevronDown, ChevronRight,
-  Download, Loader2, ArrowLeft, Award, SkipForward,
+  CheckCircle2, Circle, ChevronDown, ChevronRight, Loader2, ArrowLeft,
+  MessageSquare, Download, SkipForward, Award,
 } from 'lucide-react';
 import Link from 'next/link';
 import { coursesApi, enrollmentsApi, lessonsApi } from '@/lib/api/services';
@@ -12,19 +12,14 @@ import { formatDuration, cn } from '@/lib/utils';
 import CourseCompletionModal from '@/components/learn/CourseCompletionModal';
 import { VideoPlayer } from '@/components/learn/VideoPlayer';
 import { AutoplayCountdown } from '@/components/learn/AutoplayCountdown';
+import NotesPanel from '@/components/learn/NotesPanel';
+import { QuizComponent } from '@/components/learn/QuizComponent';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import type { Course, Enrollment, Lesson } from '@/types';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const AUTOPLAY_STORAGE_KEY = 'sorobanlard:autoplay';
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-/** Returns the flat ordered list of all lessons across every module */
-function flatLessons(course: Course): Lesson[] {
-  return course.modules?.flatMap((m) => m.lessons) ?? [];
-}
-
-// ── Component ──────────────────────────────────────────────────────────────
+type SidebarTab = 'lessons' | 'notes' | 'qa';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -37,8 +32,9 @@ function flatLessons(course: Course): Lesson[] {
 
 export default function LearnPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
   const requestedLessonId = searchParams.get("lesson");
 
   const [course, setCourse] = useState<Course | null>(null);
@@ -58,9 +54,18 @@ export default function LearnPage() {
   });
   const [showCountdown, setShowCountdown] = useState(false);
 
-  const progressRef = useRef<NodeJS.Timeout | null>(null);
   const previousCompletedCountRef = useRef<number | null>(null);
-  const hasInitializedCompletionState = useRef(false);
+  const hasInitializedCompletionStateRef = useRef(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const selectLesson = useCallback((lesson: Lesson) => {
+    setShowCountdown(false);
+    setActiveLesson(lesson);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('lesson', lesson.id);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   // ── Derived: next lesson ─────────────────────────────────────────────────
   const nextLesson = useMemo<Lesson | null>(() => {
@@ -91,9 +96,8 @@ export default function LearnPage() {
   // ── Navigate to next lecture ─────────────────────────────────────────────
   const goToNext = useCallback(() => {
     if (!nextLesson) return;
-    setShowCountdown(false);
-    setActiveLesson(nextLesson);
-  }, [nextLesson]);
+    selectLesson(nextLesson);
+  }, [nextLesson, selectLesson]);
 
   const cancelCountdown = useCallback(() => {
     setShowCountdown(false);
@@ -115,13 +119,13 @@ export default function LearnPage() {
         e.lessonProgress?.filter((p: { completed: boolean }) => p.completed).map((p: { lessonId: string }) => p.lessonId),
       );
       const first = allLessons.find((l) => !completedIds.has(l.id)) ?? allLessons[0];
-      if (first) setActiveLesson(first);
+      const requestedLesson = allLessons.find((lesson) => lesson.id === requestedLessonId);
+      if (requestedLesson || first) setActiveLesson(requestedLesson ?? first);
     })
     .catch(console.error)
     .finally(() => setLoading(false));
 
-    return () => { if (progressRef.current) clearInterval(progressRef.current); };
-  }, [id]);
+  }, [id, requestedLessonId]);
 
   // ── Course completion detection ──────────────────────────────────────────
   useEffect(() => {
@@ -137,7 +141,7 @@ export default function LearnPage() {
       hasInitializedCompletionStateRef.current && previouslyIncomplete && isComplete;
 
     previousCompletedCountRef.current = completedCount;
-    hasInitializedCompletionState.current = true;
+    hasInitializedCompletionStateRef.current = true;
 
     if (!isComplete) {
       setShowCompletionModal(false);
@@ -234,7 +238,7 @@ export default function LearnPage() {
 
         {/* Modules + lessons */}
         <div className="flex-1">
-          {course.modules?.map((module, mi) => (
+          {course.modules?.map((module) => (
             <div key={module.id} className="border-b border-ink-50">
               <button
                 onClick={() =>
@@ -242,25 +246,9 @@ export default function LearnPage() {
                 }
                 className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-ink-50 transition-colors"
               >
-                <ArrowLeft className="w-3 h-3" />
-                Back to overview
-              </Link>
-              <h2 className="text-sm font-semibold text-ink-900 line-clamp-2">
-                {course.title}
-              </h2>
-              <div className="mt-2.5">
-                <div className="flex justify-between text-xs text-ink-400 mb-1">
-                  <span>
-                    {completedCount}/{totalLessons} lessons
-                  </span>
-                  <span>{progress}%</span>
-                </div>
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
+                <span className="flex-1 text-sm font-medium text-ink-800">
+                  {module.title}
+                </span>
                 {expanded[module.id] ? (
                   <ChevronDown className="w-3.5 h-3.5 text-ink-400" />
                 ) : (
@@ -276,7 +264,7 @@ export default function LearnPage() {
                     return (
                       <button
                         key={lesson.id}
-                        onClick={() => setActiveLesson(lesson)}
+                        onClick={() => selectLesson(lesson)}
                         className={cn(
                           'w-full flex items-start gap-2.5 px-4 py-2.5 text-left transition-colors',
                           active ? 'bg-saffron-50' : 'hover:bg-ink-50',
@@ -315,10 +303,10 @@ export default function LearnPage() {
                     );
                   })}
                 </div>
-              ))}
+              )}
             </div>
-          </div>
-        )}
+          ))}
+        </div>
 
         {sidebarTab === "notes" && activeLesson && (
           <div className="flex-1 overflow-hidden">
@@ -361,6 +349,7 @@ export default function LearnPage() {
             {activeLesson.videoUrl && (
               <div className="relative aspect-video rounded-2xl overflow-hidden bg-black mb-5">
                 <VideoPlayer
+                  ref={videoRef}
                   key={activeLesson.videoUrl}
                   src={activeLesson.videoUrl}
                   videoQualities={activeLesson.videoQualities}
@@ -397,7 +386,7 @@ export default function LearnPage() {
             {activeLesson.type === "QUIZ" && (
               <div className="mb-5">
                 <QuizComponent
-                  questions={activeLesson.quiz ?? DEFAULT_QUIZ_QUESTIONS}
+                  questions={activeLesson.quiz ?? []}
                   onContinue={
                     nextLesson ? () => selectLesson(nextLesson) : undefined
                   }

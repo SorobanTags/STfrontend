@@ -38,16 +38,19 @@ export function KeyboardShortcutsModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
     >
+      <button
+        type="button"
+        aria-label="Close keyboard shortcuts"
+        className="absolute inset-0 cursor-default border-0 bg-transparent p-0"
+        onClick={onClose}
+      />
       <div
         ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="keyboard-shortcuts-title"
-        className="w-full max-w-md bg-ink-900 border border-white/20 text-white rounded-2xl p-6 shadow-2xl space-y-4"
+        className="relative z-10 w-full max-w-md bg-ink-900 border border-white/20 text-white rounded-2xl p-6 shadow-2xl space-y-4"
         tabIndex={-1}
       >
         <div className="flex items-center justify-between border-b border-white/10 pb-4">

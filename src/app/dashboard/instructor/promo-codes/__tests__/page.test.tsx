@@ -34,7 +34,7 @@ describe('PromoCodesPage CSV export', () => {
   });
 
   it('downloads the promo code list as a dated CSV', async () => {
-    getMy.mockResolvedValue({ items: [PROMO] });
+    getMy.mockResolvedValue({ data: [PROMO] });
     render(<PromoCodesPage />);
 
     await screen.findByText('SUMMER20');
@@ -52,7 +52,7 @@ describe('PromoCodesPage CSV export', () => {
   });
 
   it('disables the export button when there are no promo codes', async () => {
-    getMy.mockResolvedValue({ items: [] });
+    getMy.mockResolvedValue({ data: [] });
     render(<PromoCodesPage />);
 
     await screen.findByText(/no promo codes yet/i);

@@ -10,6 +10,8 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:ci": "playwright test --project=chromium",
+    "test:e2e:full": "playwright test --project=chromium --project=firefox --project=webkit --project=mobile-chrome --project=mobile-safari",
     "test:e2e:ui": "playwright test --ui",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
   },
@@ -30,6 +32,7 @@
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-hook-form": "^7.83.0",
+    "recharts": "^3.10.1",
     "tailwind-merge": "^2.2.0",
     "zod": "^4.4.3",
     "zustand": "^4.5.0"
@@ -39,6 +42,7 @@
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",

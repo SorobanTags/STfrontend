@@ -34,7 +34,7 @@ function exportCsv(rows: StudentEnrollmentRow[]) {
         r.progressPercent,
         r.lastActiveAt ? new Date(r.lastActiveAt).toLocaleDateString() : '',
       ]
-        .map(escape)
+        .map((value) => escape(String(value ?? '')))
         .join(','),
     ),
   ];

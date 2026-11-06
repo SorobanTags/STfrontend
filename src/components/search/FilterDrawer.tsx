@@ -48,7 +48,9 @@ export function FilterDrawer({ open, onClose, courses, resultCount }: FilterDraw
       aria-hidden={!open}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label="Close filters"
         className={cn(
           'absolute inset-0 bg-ink-900/40 transition-opacity duration-300',
           open ? 'opacity-100' : 'opacity-0',

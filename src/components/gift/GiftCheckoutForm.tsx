@@ -41,7 +41,7 @@ export function GiftCheckoutForm({
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-ink-900">{courseTitle}</p>
           <p className="text-xs text-ink-500">
-            You're gifting this course · ${parseFloat(String(coursePrice)).toFixed(2)} USDC
+            You&apos;re gifting this course · ${parseFloat(String(coursePrice)).toFixed(2)} USDC
           </p>
         </div>
       </div>

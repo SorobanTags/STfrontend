@@ -25,7 +25,7 @@ export default function PrivacyPage() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveSection(entry.id);
+            setActiveSection((entry.target as HTMLElement).id);
           }
         });
       },

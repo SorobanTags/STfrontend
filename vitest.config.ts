@@ -5,9 +5,12 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   test: {
+    include: ['**/*.test.{js,mjs,cjs,ts,jsx,tsx}'],
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/test/setup.ts',
+    maxWorkers: 2,
+    testTimeout: 15000,
   },
   resolve: {
     alias: {

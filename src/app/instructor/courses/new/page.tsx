@@ -199,7 +199,7 @@ function Step1({
       </div>
 
       <div>
-        <label className="label">Level</label>
+        <p className="label">Level</p>
         <div className="flex gap-3 flex-wrap">
           {LEVELS.map((lv) => (
             <button
@@ -498,15 +498,24 @@ function UploadDropzone({
   const isVideo  = accept.includes('video');
   return (
     <div>
-      <label className="label">{label}</label>
+      <p className="label">{label}</p>
       <div
         onClick={() => inputRef.current?.click()}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
           const f = e.dataTransfer.files[0];
           if (f) onFile(f);
         }}
+        role="button"
+        tabIndex={0}
+        aria-label={`Upload ${label.toLowerCase()}`}
         className={cn(
           'border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all',
           previewUrl
@@ -616,7 +625,7 @@ function Step4({
     <div className="space-y-5">
       {/* Free vs Paid */}
       <div>
-        <label className="label">Pricing type</label>
+        <p className="label">Pricing type</p>
         <div className="grid grid-cols-2 gap-3">
           {(['free', 'paid'] as const).map((type) => (
             <button
@@ -780,7 +789,7 @@ function Step5({
           🎉 Ready to publish?
         </p>
         <p className="text-xs text-saffron-600 mt-1">
-          Clicking "Submit for review" will register your course on-chain and send it to the SorobanLard team. Approval usually takes 24–48 hours.
+          Clicking &quot;Submit for review&quot; will register your course on-chain and send it to the SorobanLard team. Approval usually takes 24–48 hours.
         </p>
       </div>
     </div>
@@ -889,11 +898,11 @@ export default function NewCoursePage() {
       for (let si = 0; si < data.sections.length; si++) {
         const sec = data.sections[si];
         if (!sec.title && sec.lessons.length === 0) continue;
-        const module = await lessonsApi.createModule(courseId, sec.title || `Section ${si + 1}`, si + 1);
+        const courseModule = await lessonsApi.createModule(courseId, sec.title || `Section ${si + 1}`, si + 1);
         for (let li = 0; li < sec.lessons.length; li++) {
           const lesson = sec.lessons[li];
           await lessonsApi.createLesson({
-            moduleId: module.id,
+            moduleId: courseModule.id,
             title:    lesson.title || `Lesson ${li + 1}`,
             type:     lesson.type,
             position: li + 1,

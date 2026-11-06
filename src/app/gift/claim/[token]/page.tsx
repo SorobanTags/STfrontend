@@ -151,7 +151,7 @@ export default function GiftClaimPage() {
 
           {gift?.message && (
             <blockquote className="rounded-xl border-l-4 border-saffron-300 bg-saffron-50 py-3 pl-4 pr-3 text-sm italic text-ink-700">
-              "{gift.message}"
+              &quot;{gift.message}&quot;
             </blockquote>
           )}
 
@@ -182,7 +182,7 @@ export default function GiftClaimPage() {
 
           {!isConnected && (
             <p className="text-center text-xs text-ink-400">
-              You'll be asked to sign in or create a free account first.
+              You&apos;ll be asked to sign in or create a free account first.
             </p>
           )}
         </div>

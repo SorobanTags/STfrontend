@@ -45,9 +45,12 @@ vi.mock('@stripe/react-stripe-js', () => {
     return 'unknown';
   };
 
-  const stripeInput =
-    (testId: string, withBrand: boolean) =>
-    ({ onChange }: { onChange?: (event: unknown) => void }) =>
+  const stripeInput = (testId: string, withBrand: boolean) => {
+    const StripeInput = ({
+      onChange,
+    }: {
+      onChange?: (event: unknown) => void;
+    }) =>
       React.createElement('input', {
         'data-testid': testId,
         onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,6 +62,9 @@ vi.mock('@stripe/react-stripe-js', () => {
           });
         },
       });
+    StripeInput.displayName = testId;
+    return StripeInput;
+  };
 
   return {
     CardNumberElement: stripeInput('card-number', true),

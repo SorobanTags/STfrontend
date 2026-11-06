@@ -76,7 +76,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
       
       {/* Quote text */}
       <blockquote className="text-sm sm:text-base text-ink-700 leading-relaxed mb-6 flex-1">
-        "{testimonial.quote}"
+        &quot;{testimonial.quote}&quot;
       </blockquote>
       
       {/* Author info */}

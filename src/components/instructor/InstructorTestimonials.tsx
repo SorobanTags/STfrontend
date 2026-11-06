@@ -60,7 +60,7 @@ export function InstructorTestimonials() {
             <Quote className="mt-4 h-8 w-8 text-[#7F77DD]/30" />
 
             <p className="mt-2 text-sm leading-relaxed text-[#26215C] font-normal italic">
-              "{t.quote}"
+              &quot;{t.quote}&quot;
             </p>
           </div>
 
