@@ -25,6 +25,46 @@ describe('toCsv', () => {
   it('leaves negative numbers alone', () => {
     expect(toCsv([[-5]])).toBe('-5');
   });
+
+  it.each([
+    ['=', '=1+1', "'=1+1"],
+    ['+', '+1', "'+1"],
+    ['-', '-1', "'-1"],
+    ['@', '@SUM(A1)', "'@SUM(A1)"],
+    ['tab', '\tcmd', "'\tcmd"],
+    // A leading CR is prefixed and then the cell is quoted because it holds a CR.
+    ['CR', '\rcmd', '"\'\rcmd"'],
+  ])('prefixes cells starting with %s', (_label, input, expected) => {
+    expect(toCsv([[input]])).toBe(expected);
+  });
+
+  it('does not prefix text that merely contains a trigger character', () => {
+    expect(toCsv([['a=b', 'x+y', 'e-mail', 'me@x.io']])).toBe('a=b,x+y,e-mail,me@x.io');
+  });
+
+  it('doubles embedded quotes and wraps the cell in quotes', () => {
+    expect(toCsv([['say "hi", ok']])).toBe('"say ""hi"", ok"');
+  });
+
+  it('quotes cells containing CR or LF', () => {
+    expect(toCsv([['a\nb', 'c\rd']])).toBe('"a\nb","c\rd"');
+  });
+
+  it('prefixes before quoting so a formula with a quote stays inert', () => {
+    expect(toCsv([['=A1,"x"']])).toBe('"\'=A1,""x"""');
+  });
+
+  it('does not prefix numeric cells, including negative numbers', () => {
+    expect(toCsv([[-5, 0, 3.14]])).toBe('-5,0,3.14');
+  });
+
+  it.each([[null], [undefined]])('serialises %s to an empty string', (cell) => {
+    expect(toCsv([[cell]])).toBe('');
+  });
+
+  it('joins multiple rows with CRLF', () => {
+    expect(toCsv([['a'], ['b'], ['c']])).toBe('a\r\nb\r\nc');
+  });
 });
 
 describe('downloadCsv', () => {
