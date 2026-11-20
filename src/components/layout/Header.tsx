@@ -116,7 +116,10 @@ export function Header() {
         setMegaCategories(mapped);
         setActiveCategorySlug(mapped[0]?.slug ?? '');
       })
-      .catch(() => {/* keep static fallback */ });
+      .catch((error: unknown) => {
+        // Keep the static fallback categories and activeCategorySlug as they are.
+        console.warn('Header: failed to load categories, using static fallback', error);
+      });
 
     coursesApi.list({ limit: 100 })
       .then((response) => setCategoryCourses(response.data ?? []))

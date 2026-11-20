@@ -103,4 +103,100 @@ describe('useCountdown', () => {
     });
     expect(result.current.secondsLeft).toBe(6);
   });
+
+  it.each([null, 0, -5])('is inactive when seconds is %s', (seconds) => {
+    const onExpire = vi.fn();
+    const { result } = renderHook(() => useCountdown({ seconds, onExpire }));
+
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
+    expect(result.current.isActive).toBe(false);
+    expect(result.current.secondsLeft).toBe(0);
+    expect(result.current.isExpired).toBe(false);
+    expect(onExpire).not.toHaveBeenCalled();
+  });
+
+  it('expires after the full duration and calls onExpire exactly once', () => {
+    const onExpire = vi.fn();
+    const { result } = renderHook(() => useCountdown({ seconds: 5, onExpire }));
+
+    act(() => {
+      vi.advanceTimersByTime(4_000);
+    });
+    expect(result.current.isExpired).toBe(false);
+    expect(onExpire).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
+    expect(result.current.isExpired).toBe(true);
+    expect(onExpire).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
+    expect(onExpire).toHaveBeenCalledTimes(1);
+  });
+
+  it('flips isWarning at the warningSeconds boundary and clears it on expiry', () => {
+    const { result } = renderHook(() => useCountdown({ seconds: 10, warningSeconds: 3 }));
+
+    act(() => {
+      vi.advanceTimersByTime(6_000);
+    });
+    expect(result.current.secondsLeft).toBe(4);
+    expect(result.current.isWarning).toBe(false);
+
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
+    expect(result.current.secondsLeft).toBe(3);
+    expect(result.current.isWarning).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(3_000);
+    });
+    expect(result.current.isWarning).toBe(false);
+  });
+
+  it('does not report warning while paused', () => {
+    const { result, rerender } = renderHook(
+      ({ enabled }) => useCountdown({ seconds: 10, warningSeconds: 10, enabled }),
+      { initialProps: { enabled: true } },
+    );
+    expect(result.current.isWarning).toBe(true);
+    rerender({ enabled: false });
+    expect(result.current.isWarning).toBe(false);
+  });
+
+  it('does not call onExpire while paused', () => {
+    const onExpire = vi.fn();
+    renderHook(() => useCountdown({ seconds: 3, onExpire, enabled: false }));
+
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
+    expect(onExpire).not.toHaveBeenCalled();
+  });
+
+  it('restart re-arms onExpire so it can fire again', () => {
+    const onExpire = vi.fn();
+    const { result } = renderHook(() => useCountdown({ seconds: 2, onExpire }));
+
+    act(() => {
+      vi.advanceTimersByTime(2_000);
+    });
+    expect(onExpire).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      result.current.restart();
+    });
+    expect(result.current.isExpired).toBe(false);
+
+    act(() => {
+      vi.advanceTimersByTime(2_000);
+    });
+    expect(onExpire).toHaveBeenCalledTimes(2);
+  });
 });
