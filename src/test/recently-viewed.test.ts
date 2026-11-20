@@ -3,6 +3,7 @@ import {
   RECENTLY_VIEWED_KEY,
   RECENTLY_VIEWED_LIMIT,
   RECENTLY_VIEWED_MAX_AGE_MS,
+  clearRecentlyViewed,
   getRecentlyViewed,
   recordRecentlyViewed,
 } from '@/lib/recently-viewed';
@@ -35,5 +36,46 @@ describe('recently viewed courses', () => {
 
     expect(getRecentlyViewed(now).map(({ courseId }) => courseId)).toEqual(['fresh']);
     expect(JSON.parse(localStorage.getItem(RECENTLY_VIEWED_KEY) ?? '[]')).toHaveLength(1);
+  });
+});
+
+describe('recently viewed courses: store rules', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('moves a re-added course to the front without duplicating it', () => {
+    recordRecentlyViewed('a', 1);
+    recordRecentlyViewed('b', 2);
+    recordRecentlyViewed('c', 3);
+    recordRecentlyViewed('a', 4);
+
+    expect(getRecentlyViewed(4).map(({ courseId }) => courseId)).toEqual(['a', 'c', 'b']);
+  });
+
+  it('caps the list at RECENTLY_VIEWED_LIMIT and drops the oldest entries', () => {
+    for (let index = 0; index < RECENTLY_VIEWED_LIMIT + 3; index += 1) {
+      recordRecentlyViewed(`course-${index}`, index);
+    }
+
+    const ids = getRecentlyViewed(RECENTLY_VIEWED_LIMIT + 3).map(({ courseId }) => courseId);
+    expect(ids).toHaveLength(RECENTLY_VIEWED_LIMIT);
+    expect(ids).not.toContain('course-0');
+    expect(ids).not.toContain('course-2');
+    expect(ids).toContain('course-3');
+  });
+
+  it('returns the most recently viewed course first', () => {
+    recordRecentlyViewed('older', 1);
+    recordRecentlyViewed('newest', 2);
+
+    expect(getRecentlyViewed(2)[0].courseId).toBe('newest');
+  });
+
+  it('empties the list when cleared', () => {
+    recordRecentlyViewed('a', 1);
+    recordRecentlyViewed('b', 2);
+    clearRecentlyViewed();
+
+    expect(getRecentlyViewed(2)).toEqual([]);
+    expect(JSON.parse(localStorage.getItem(RECENTLY_VIEWED_KEY) ?? 'null')).toEqual([]);
   });
 });
