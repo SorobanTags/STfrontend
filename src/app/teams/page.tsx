@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { PricingTiers } from '@/components/teams/PricingTiers';
 import { FAQAccordion, type FAQItem } from '@/components/ui/FAQAccordion';
@@ -76,6 +76,8 @@ const LOGOS = [
 export default function TeamsPage() {
   const toast = useToastContext();
   const formRef = useRef<HTMLDivElement>(null);
+  const submitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (submitTimer.current) clearTimeout(submitTimer.current); }, []);
 
   const [companyName, setCompanyName] = useState('');
   const [teamSize, setTeamSize] = useState('10-50');
@@ -110,7 +112,7 @@ export default function TeamsPage() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    submitTimer.current = setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
       toast.success({

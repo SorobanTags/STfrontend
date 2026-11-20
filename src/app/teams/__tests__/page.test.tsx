@@ -60,4 +60,15 @@ describe('Teams Landing Page (Issue #189)', () => {
 
     expect(screen.getByText(/Submitting.../i)).toBeInTheDocument();
   });
+
+  it('does not toast after unmount mid-submit', () => {
+    vi.useFakeTimers();
+    const { unmount } = render(<ToastProvider><TeamsPage /></ToastProvider>);
+    fireEvent.change(screen.getByLabelText(/Company Name \*/i), { target: { value: 'Acme' } });
+    fireEvent.change(screen.getByLabelText(/Work Email \*/i), { target: { value: 'a@acme.com' } });
+    fireEvent.click(screen.getByRole('button', { name: /Submit Quote Request/i }));
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.useRealTimers();
+  });
 });

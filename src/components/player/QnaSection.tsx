@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { QnaQuestionForm } from './QnaQuestionForm';
 import { QnaFilterBar } from './QnaFilterBar';
@@ -9,6 +9,7 @@ import type { QnaQuestion, QnaReply, QnaSortOption, QnaFilterOption } from '@/ty
 
 interface QnaSectionProps {
   lessonTitle?: string;
+  lessonId?: string;
   /** Initial set of questions for this lesson */
   questions: QnaQuestion[];
   /** Current viewer — used to tag newly-posted questions/replies as "You" */
@@ -35,6 +36,7 @@ interface QnaSectionProps {
  */
 export function QnaSection({
   lessonTitle,
+  lessonId,
   questions: initialQuestions,
   currentUser = { name: 'You', avatarUrl: null },
   onSubmitQuestion,
@@ -46,6 +48,14 @@ export function QnaSection({
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<QnaSortOption>('most_recent');
   const [filterBy, setFilterBy] = useState<QnaFilterOption>('all');
+  const pending = useRef(new Set<string>());
+  const lastLesson = useRef(lessonId);
+  useEffect(() => {
+    if (lastLesson.current === lessonId) return;
+    lastLesson.current = lessonId;
+    setQuestions(initialQuestions);
+    setSearch('');
+  }, [lessonId, initialQuestions]);
 
   async function handleNewQuestion(title: string, body: string) {
     await onSubmitQuestion?.(title, body);
@@ -79,15 +89,13 @@ export function QnaSection({
     );
   }
 
-  function handleUpvote(questionId: string) {
-    setQuestions((prev) =>
-      prev.map((q) => {
-        if (q.id !== questionId) return q;
-        const nowUpvoted = !q.viewerUpvoted;
-        return { ...q, viewerUpvoted: nowUpvoted, upvotes: q.upvotes + (nowUpvoted ? 1 : -1) };
-      }),
-    );
-    void onUpvote?.(questionId);
+  async function handleUpvote(id: string) {
+    if (pending.current.has(id)) return;
+    pending.current.add(id);
+    const flip = () => setQuestions((prev) => prev.map((q) => q.id !== id ? q :
+      { ...q, viewerUpvoted: !q.viewerUpvoted, upvotes: q.upvotes + (q.viewerUpvoted ? -1 : 1) }));
+    flip();
+    try { await onUpvote?.(id); } catch { flip(); } finally { pending.current.delete(id); }
   }
 
   // Filter by tab
