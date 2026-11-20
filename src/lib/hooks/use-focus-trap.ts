@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 
 interface UseMobileDrawerFocusTrapOptions {
   isOpen: boolean;
@@ -22,6 +22,8 @@ export function useMobileDrawerFocusTrap({
   triggerRef,
   onClose,
 }: UseMobileDrawerFocusTrapOptions) {
+  const wasOpenRef = useRef(false);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -66,7 +68,10 @@ export function useMobileDrawerFocusTrap({
 
   // Return focus to the trigger element when the drawer closes.
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      wasOpenRef.current = true;
+    } else if (wasOpenRef.current) {
+      wasOpenRef.current = false;
       triggerRef.current?.focus();
     }
   }, [isOpen, triggerRef]);
