@@ -34,8 +34,21 @@ const course = {
   _count: { enrollments: 100 },
 };
 
+const certificate = {
+  id: 'certificate-react-fundamentals',
+  courseId: course.id,
+  courseTitle: course.title,
+  studentName: 'Alex Rivera',
+  studentAddress: 'GTESTSTUDENT',
+  instructorName: course.instructor.name,
+  issuedAt: '2026-02-01T00:00:00.000Z',
+  txHash: 'TESTCERTIFICATETXHASH',
+  status: 'ISSUED',
+};
+
 const courses = [course];
 const categories = [{ name: 'Web Development', count: courses.length }];
+const certificates = [certificate];
 
 function respond(response, data, status = 200) {
   response.writeHead(status, {
@@ -112,7 +125,22 @@ const server = createServer((request, response) => {
     return;
   }
 
-  respond(response, { success: true, data: [] });
+  const certificateId = pathname.match(/^\/api\/v1\/certificates\/([^/]+)$/)?.[1];
+  if (certificateId) {
+    const matchingCertificate = certificates.find(
+      (item) => item.id === certificateId,
+    );
+    respond(
+      response,
+      matchingCertificate
+        ? { success: true, data: matchingCertificate }
+        : { success: false, message: 'Certificate not found' },
+      matchingCertificate ? 200 : 404,
+    );
+    return;
+  }
+
+  respond(response, { success: false, message: 'Not found' }, 404);
 });
 
 server.listen(port, '127.0.0.1');
