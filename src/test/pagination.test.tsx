@@ -6,12 +6,13 @@ import { Pagination } from '@/components/ui/Pagination';
 
 const mockPush = vi.fn();
 const mockGet = vi.fn((_key: string) => null);
+const mockSearchParams = new URLSearchParams();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
   usePathname: () => '/courses',
   useSearchParams: () => {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(mockSearchParams.toString());
     params.get = mockGet;
     return params;
   },
@@ -20,6 +21,8 @@ vi.mock('next/navigation', () => ({
 describe('Pagination Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGet.mockImplementation((_key: string) => null);
+    mockSearchParams.forEach((_value, key) => mockSearchParams.delete(key));
   });
 
   it('renders page numbers correctly for small total counts', () => {
@@ -75,6 +78,41 @@ describe('Pagination Component', () => {
 
     expect(handlePageChange).toHaveBeenCalledWith(2);
     expect(mockPush).toHaveBeenCalledWith('/courses?page=2', { scroll: false });
+  });
+
+  it('does not call router.push when updateUrl is false', () => {
+    const handlePageChange = vi.fn();
+    render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={handlePageChange} updateUrl={false} />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Page 2' }));
+
+    expect(handlePageChange).toHaveBeenCalledWith(2);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('preserves existing search params in the pushed URL', () => {
+    mockSearchParams.set('q', 'react');
+    mockGet.mockImplementation((key: string) => mockSearchParams.get(key));
+
+    render(<Pagination currentPage={1} totalPages={5} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Page 2' }));
+
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    const pushedUrl = mockPush.mock.calls[0][0] as string;
+    const pushedParams = new URLSearchParams(pushedUrl.split('?')[1]);
+    expect(pushedParams.get('q')).toBe('react');
+    expect(pushedParams.get('page')).toBe('2');
+  });
+
+  it('uses a custom paramName in the pushed URL', () => {
+    render(<Pagination currentPage={1} totalPages={5} paramName="p" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Page 2' }));
+
+    expect(mockPush).toHaveBeenCalledWith('/courses?p=2', { scroll: false });
   });
 
   it('hides itself (renders null) when there is only one page of results (totalPages <= 1)', () => {
