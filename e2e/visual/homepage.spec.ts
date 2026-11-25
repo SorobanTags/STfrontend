@@ -73,10 +73,9 @@ test.describe('Homepage Visual Regression @visual', () => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
 
-      await page.waitForSelector('h1', { state: 'visible', timeout: 10000 }).catch(() => {});
-      await page.waitForSelector('[class*="hero"]', { state: 'visible', timeout: 10000 }).catch(() => {});
-
-      await page.waitForTimeout(1500);
+      const hero = page.getByRole('region', { name: 'Hero' });
+      await expect(hero).toBeVisible();
+      await expect(hero.getByRole('heading', { level: 1 })).toBeVisible();
 
       const suffix = `${viewportName}-${viewportSize.width}x${viewportSize.height}`;
       await expect(page).toHaveScreenshot(`homepage-${suffix}.png`, {
