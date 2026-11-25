@@ -8,6 +8,7 @@ import { cn, timeAgo } from '@/lib/utils';
 import type { Notification } from '@/types';
 import { isToday } from 'date-fns';
 import { useNotificationStore } from '@/lib/hooks/use-notification-store';
+import { getNotificationTypeColor, getNotificationTypeLabel } from '@/lib/notifications';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -116,6 +117,14 @@ function NotificationRow({ notification: n, onRead }: NotificationRowProps) {
           {n.message}
         </p>
         <p className="mt-1 text-[10px] text-white/40">{timeAgo(n.createdAt)}</p>
+        <span
+          className={cn(
+            'mt-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium',
+            getNotificationTypeColor(n.type),
+          )}
+        >
+          {getNotificationTypeLabel(n.type)}
+        </span>
       </div>
 
       {/* Unread dot */}

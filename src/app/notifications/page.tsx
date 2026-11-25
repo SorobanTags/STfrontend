@@ -5,20 +5,7 @@ import { Bell, CheckCheck, Loader2 } from 'lucide-react';
 import { notificationsApi } from '@/lib/api/services';
 import { timeAgo } from '@/lib/utils';
 import type { Notification } from '@/types';
-
-const TYPE_COLORS: Record<string, string> = {
-  COURSE_APPROVED:      'bg-leaf-50 text-leaf-700',
-  COURSE_REJECTED:      'bg-red-50 text-red-700',
-  ENROLLMENT_CONFIRMED: 'bg-saffron-50 text-saffron-700',
-  COURSE_COMPLETED:     'bg-leaf-50 text-leaf-700',
-  CERTIFICATE_ISSUED:   'bg-saffron-50 text-saffron-700',
-  ASSIGNMENT_APPROVED:  'bg-leaf-50 text-leaf-700',
-  ASSIGNMENT_REJECTED:  'bg-red-50 text-red-700',
-  ASSIGNMENT_SUBMITTED: 'bg-blue-50 text-blue-700',
-  PAYMENT_RECEIVED:     'bg-leaf-50 text-leaf-700',
-  NEW_ENROLLMENT:       'bg-saffron-50 text-saffron-700',
-  COURSE_ANNOUNCEMENT:  'bg-blue-50 text-blue-700',
-};
+import { getNotificationTypeColor, getNotificationTypeLabel } from '@/lib/notifications';
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -92,9 +79,9 @@ export default function NotificationsPage() {
                 <div className="flex items-start justify-between gap-2 mb-0.5">
                   <p className="text-sm font-medium text-ink-900">{n.title}</p>
                   <span className={`badge text-[10px] flex-shrink-0 ${
-                    TYPE_COLORS[n.type] ?? 'bg-ink-100 text-ink-600'
+                    getNotificationTypeColor(n.type)
                   }`}>
-                    {n.type === 'COURSE_ANNOUNCEMENT' ? 'announcement' : n.type.replace(/_/g, ' ').toLowerCase()}
+                    {getNotificationTypeLabel(n.type)}
                   </span>
                 </div>
                 <p className="text-xs text-ink-500 leading-relaxed">{n.message}</p>
