@@ -79,6 +79,55 @@ const leaderboardEntries = [
 
 const failedLeaderboardPeriods = new Set();
 
+// Notifications feed (#127). Mutable so mark-read persists across requests;
+// reset with POST /__test__/notifications/reset at the start of each test.
+const notificationFixtures = [
+  {
+    id: 'notif-enrollment',
+    type: 'ENROLLMENT_CONFIRMED',
+    title: 'Enrollment confirmed',
+    message: 'You are now enrolled in React Fundamentals for Beginners.',
+    data: { courseId: course.id },
+    read: false,
+    createdAt: '2026-01-03T10:00:00.000Z',
+  },
+  {
+    id: 'notif-certificate',
+    type: 'CERTIFICATE_ISSUED',
+    title: 'Certificate issued',
+    message: 'Your certificate for React Fundamentals is ready.',
+    data: null,
+    read: false,
+    createdAt: '2026-01-02T10:00:00.000Z',
+  },
+  {
+    id: 'notif-announcement',
+    type: 'COURSE_ANNOUNCEMENT',
+    title: 'New module released',
+    message: 'Module 4 on hooks is now available.',
+    data: null,
+    read: false,
+    createdAt: '2026-01-01T10:00:00.000Z',
+  },
+  {
+    id: 'notif-payment',
+    type: 'PAYMENT_RECEIVED',
+    title: 'Payment received',
+    message: 'We received your payment of $49.99.',
+    data: null,
+    read: true,
+    createdAt: '2025-12-31T10:00:00.000Z',
+  },
+];
+
+let notifications = [];
+
+export function resetNotifications() {
+  notifications = notificationFixtures.map((n) => ({ ...n }));
+}
+
+resetNotifications();
+
 function respond(response, data, status = 200) {
   response.writeHead(status, {
     'Access-Control-Allow-Origin': '*',
@@ -109,6 +158,44 @@ export function handleRequest(request, response) {
 
   if (pathname === '/health') {
     respond(response, { status: 'ok' });
+    return;
+  }
+
+  if (pathname === '/__test__/notifications/reset' && request.method === 'POST') {
+    resetNotifications();
+    respond(response, { success: true });
+    return;
+  }
+
+  if (pathname === '/api/v1/notifications' && request.method === 'GET') {
+    const unreadOnly = url.searchParams.get('unreadOnly') === 'true';
+    const data = notifications.filter((n) => !unreadOnly || !n.read);
+    respond(response, {
+      success: true,
+      data: { data, meta: { total: data.length, page: 1, limit: 20, totalPages: 1 } },
+    });
+    return;
+  }
+
+  // The client sends PATCH; POST is accepted too.
+  if (
+    pathname === '/api/v1/notifications/read-all' &&
+    (request.method === 'PATCH' || request.method === 'POST')
+  ) {
+    notifications = notifications.map((n) => ({ ...n, read: true }));
+    respond(response, { success: true, data: null });
+    return;
+  }
+
+  const readId = pathname.match(/^\/api\/v1\/notifications\/([^/]+)\/read$/)?.[1];
+  if (readId && request.method === 'PATCH') {
+    const target = notifications.find((n) => n.id === readId);
+    if (!target) {
+      respond(response, { success: false, message: 'Notification not found' }, 404);
+      return;
+    }
+    target.read = true;
+    respond(response, { success: true, data: target });
     return;
   }
 

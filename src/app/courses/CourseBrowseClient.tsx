@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { coursesApi } from '@/lib/api/services';
+import { COURSES_PAGE_SIZE } from './constants';
 import { CourseCard } from '@/components/courses/CourseCard';
 import { CourseCardSkeleton } from '@/components/skeletons';
 import { FilterSidebar } from '@/components/courses/FilterSidebar';
@@ -21,7 +22,7 @@ const SORT_OPTIONS = [
   { label: 'Newest', value: 'newest' },
 ] as const;
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = COURSES_PAGE_SIZE;
 
 // ── Active filter chip ────────────────────────────────────────────
 function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {

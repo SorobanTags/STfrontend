@@ -892,14 +892,3 @@ export const tagsApi = {
     return data.data;
   },
 };
-
-export const newsletterApi = {
-  subscribe: async (email: string): Promise<void> => {
-    await apiClient.post<ApiResponse<{ message: string }>>(
-      "/newsletter/subscribe",
-      {
-        email,
-      },
-    );
-  },
-};
