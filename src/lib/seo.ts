@@ -133,6 +133,7 @@ export function buildPaginatedMetadata({
   totalPages,
   images,
   type = 'website',
+  canonicalPerPage = false,
 }: {
   title?: string;
   description?: string;
@@ -142,9 +143,19 @@ export function buildPaginatedMetadata({
   totalPages: number;
   images?: string[];
   type?: 'website' | 'article';
+  /** Give each page its own canonical instead of page 1's (#91). */
+  canonicalPerPage?: boolean;
 }): Metadata {
-  // Canonical always points to page 1 (no query param)
-  const canonicalUrl = absoluteUrl(basePath);
+  // By default every page canonicalises to page 1 (the bare path). With
+  // `canonicalPerPage`, each page is its own canonical instead, clamped to the
+  // real page range so invalid or out-of-range pages never get one (#91).
+  const lastPage = Math.max(1, Math.floor(totalPages) || 1);
+  const canonicalPage = canonicalPerPage
+    ? Math.min(Math.max(1, Math.floor(currentPage) || 1), lastPage)
+    : 1;
+  const canonicalUrl = absoluteUrl(
+    canonicalPage === 1 ? basePath : `${basePath}?page=${canonicalPage}`,
+  );
   const resolvedDescription = description ?? siteConfig.description;
   const socialTitle = title ? `${title} | ${siteConfig.name}` : siteConfig.name;
 

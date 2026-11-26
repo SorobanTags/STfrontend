@@ -1,4 +1,3 @@
-```typescript
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { reportWebVitals } from './reportWebVitals';
 
@@ -141,6 +140,60 @@ describe('reportWebVitals', () => {
       reportWebVitals({ name: 'LCP', value: 1000 } as never);
 
       expect(infoSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('failing transport (#94)', () => {
+    beforeEach(() => {
+      vi.stubEnv('NODE_ENV', 'production');
+      delete (navigator as unknown as { sendBeacon?: unknown }).sendBeacon;
+    });
+
+    it('resolves and warns when fetch rejects', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+      await expect(reportWebVitals({ name: 'LCP', value: 1000, rating: 'good' })).resolves.toBeUndefined();
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('failed to report LCP'),
+        expect.any(TypeError),
+      );
+    });
+
+    it('resolves and warns when fetch throws synchronously', async () => {
+      vi.stubGlobal('fetch', vi.fn(() => {
+        throw new Error('boom');
+      }));
+      await expect(reportWebVitals({ name: 'CLS', value: 0.05, rating: 'good' })).resolves.toBeUndefined();
+      expect(warnSpy).toHaveBeenCalled();
+    });
+
+    it('resolves and warns when sendBeacon throws', async () => {
+      Object.defineProperty(navigator, 'sendBeacon', {
+        configurable: true,
+        writable: true,
+        value: vi.fn(() => {
+          throw new Error('beacon blocked');
+        }),
+      });
+      await expect(reportWebVitals({ name: 'INP', value: 80, rating: 'good' })).resolves.toBeUndefined();
+      expect(warnSpy).toHaveBeenCalled();
+    });
+
+    it('warns on a non-2xx response without throwing', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
+      await expect(reportWebVitals({ name: 'LCP', value: 900, rating: 'good' })).resolves.toBeUndefined();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('503'));
+    });
+
+    it('posts a successful send to /api/analytics/web-vitals', async () => {
+      const fetchSpy = vi.fn().mockResolvedValue({ ok: true, status: 204 });
+      vi.stubGlobal('fetch', fetchSpy);
+      await reportWebVitals({ name: 'LCP', value: 1200, rating: 'good' });
+      expect(fetchSpy).toHaveBeenCalledWith(
+        '/api/analytics/web-vitals',
+        expect.objectContaining({ method: 'POST', keepalive: true }),
+      );
+      expect(JSON.parse(fetchSpy.mock.calls[0][1].body)).toMatchObject({ name: 'LCP', value: 1200 });
+      expect(warnSpy).not.toHaveBeenCalled();
     });
   });
 });
