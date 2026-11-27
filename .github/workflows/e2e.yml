@@ -28,8 +28,34 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Start mock API server
+        run: |
+          node e2e/mock-api-server.mjs > mock-api-server.log 2>&1 &
+          echo "MOCK_API_PID=$!" >> "$GITHUB_ENV"
+
+      - name: Wait for mock API /health
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:3000/health > /dev/null; then
+              echo "Mock API server is healthy"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Mock API server did not become healthy in time"
+          cat mock-api-server.log || true
+          exit 1
+
       - name: Run Playwright tests
         run: npm run test:e2e
+
+      - name: Stop mock API server
+        if: always()
+        run: |
+          if [ -n "${MOCK_API_PID:-}" ] && kill -0 "$MOCK_API_PID" 2>/dev/null; then
+            kill "$MOCK_API_PID" || true
+            wait "$MOCK_API_PID" 2>/dev/null || true
+          fi
 
       - name: Upload Playwright report and screenshot diffs
         if: failure()
@@ -40,4 +66,5 @@ jobs:
             playwright-report/
             test-results/
             e2e/screenshots/
+            mock-api-server.log
           retention-days: 14

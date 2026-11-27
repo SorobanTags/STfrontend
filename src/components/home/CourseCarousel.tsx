@@ -244,6 +244,7 @@ export function CourseCarousel({
         ) : (
           <div
             ref={scrollerRef}
+            data-testid="carousel-scroller"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth pb-1 -mx-1 px-1"
