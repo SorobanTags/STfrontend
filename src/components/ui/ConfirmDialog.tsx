@@ -8,6 +8,8 @@ export interface ConfirmDialogProps {
   open: boolean;
   title: string;
   description?: React.ReactNode;
+  /** Optional extra content (e.g. a form field) rendered below the description. */
+  children?: React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   /** Label shown on the confirm button while `isLoading` is true. */
@@ -28,6 +30,7 @@ export function ConfirmDialog({
   open,
   title,
   description,
+  children,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   loadingText,
@@ -96,6 +99,8 @@ export function ConfirmDialog({
             )}
           </div>
         </div>
+
+        {children && <div className="mt-4">{children}</div>}
 
         <div className="mt-6 flex justify-end gap-3">
           <Button ref={cancelRef} variant="tertiary" onClick={onCancel} disabled={isLoading}>

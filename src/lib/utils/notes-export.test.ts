@@ -1,10 +1,36 @@
 import { describe, it, expect } from 'vitest';
-import { notesFilename, notesToMarkdown, type ExportableNote } from './notes-export';
+import {
+  formatTimestamp,
+  notesFilename,
+  notesToMarkdown,
+  type ExportableNote,
+} from './notes-export';
 
 const note = (timestamp: number, text: string): ExportableNote => ({
   timestamp,
   text,
   createdAt: '2026-01-01T00:00:00.000Z',
+});
+
+describe('formatTimestamp', () => {
+  it('floors fractional timestamps', () => {
+    expect(formatTimestamp(12.9)).toBe(12);
+  });
+
+  it('normalises NaN and non-finite timestamps to zero', () => {
+    expect(formatTimestamp(NaN)).toBe(0);
+    expect(formatTimestamp(Infinity)).toBe(0);
+    expect(formatTimestamp(-Infinity)).toBe(0);
+  });
+
+  it('normalises negative timestamps to zero', () => {
+    expect(formatTimestamp(-42)).toBe(0);
+  });
+
+  it('keeps valid timestamps unchanged', () => {
+    expect(formatTimestamp(0)).toBe(0);
+    expect(formatTimestamp(3661)).toBe(3661);
+  });
 });
 
 describe('notesToMarkdown', () => {
@@ -37,6 +63,25 @@ describe('notesToMarkdown', () => {
     const md = notesToMarkdown([], { lectureTitle: 'Intro', courseTitle: 'Baking 101' });
     expect(md).toContain('# Notes: Intro');
     expect(md).toContain('**Course:** Baking 101');
+  });
+
+  it('renders NaN and negative timestamps as 0:00', () => {
+    const md = notesToMarkdown([note(NaN, 'nan note'), note(-30, 'negative note')]);
+    expect(md).toContain('## [0:00]');
+    expect(md).not.toContain('NaN');
+    expect(md).not.toContain('-1:');
+  });
+
+  it('does not let an injection attempt in the timestamp field reach the output', () => {
+    const md = notesToMarkdown([note('<script>alert(1)</script>' as unknown as number, 'x')]);
+    expect(md).not.toContain('<script>');
+    expect(md).toContain('## [0:00]');
+  });
+
+  it('orders notes ascending after normalising timestamps', () => {
+    const md = notesToMarkdown([note(120, 'third'), note(NaN, 'first'), note(60, 'second')]);
+    expect(md.indexOf('first')).toBeLessThan(md.indexOf('second'));
+    expect(md.indexOf('second')).toBeLessThan(md.indexOf('third'));
   });
 });
 

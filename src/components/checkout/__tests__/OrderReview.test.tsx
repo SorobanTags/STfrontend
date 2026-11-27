@@ -1,90 +1,91 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { OrderReview } from '../OrderReview';
-import type { CartItem } from '@/lib/hooks/use-cart-store';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { OrderReview } from "../OrderReview";
+import type { CartItem } from "@/lib/hooks/use-cart-store";
 
-vi.mock('@/lib/hooks/use-cart-store', () => ({
+vi.mock("@/lib/hooks/use-cart-store", () => ({
   useCartStore: vi.fn(),
+  useCartHydrated: vi.fn(() => true),
 }));
 
-vi.mock('next/image', () => ({
+vi.mock("next/image", () => ({
   default: function MockImage({ src, alt, fill, className }: any) {
-    return (
-      <img
-        src={src}
-        alt={alt}
-        className={className}
-      />
-    );
+    return <img src={src} alt={alt} className={className} />;
   },
 }));
 
-vi.mock('next/link', () => ({
+vi.mock("next/link", () => ({
   default: function MockLink({ children, href }: any) {
     return <a href={href}>{children}</a>;
   },
 }));
 
-vi.mock('@/lib/utils', () => ({
+vi.mock("@/lib/utils", () => ({
   formatUsdc: vi.fn((price: number) => `$${price.toFixed(2)}`),
-  cn: (...args: string[]) => args.filter(Boolean).join(' '),
+  cn: (...args: string[]) => args.filter(Boolean).join(" "),
 }));
 
 const mockCartItems: CartItem[] = [
   {
-    courseId: 'course-1',
+    courseId: "course-1",
     course: {
-      id: 'course-1',
-      title: 'React Basics',
-      price: 50.00,
-      category: 'Web Development',
-      thumbnailUrl: 'https://example.com/thumb1.jpg',
-      instructor: { id: 'instr-1', name: 'John Doe', avatarUrl: null },
-      description: '',
-      level: 'BEGINNER',
+      id: "course-1",
+      title: "React Basics",
+      price: 50.0,
+      category: "Web Development",
+      thumbnailUrl: "https://example.com/thumb1.jpg",
+      instructor: { id: "instr-1", name: "John Doe", avatarUrl: null },
+      description: "",
+      level: "BEGINNER",
       originalPrice: 100,
       totalDuration: 3600,
       totalLessons: 24,
       rating: 4.5,
       reviewCount: 100,
-      status: 'ACTIVE',
+      status: "ACTIVE",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
   },
   {
-    courseId: 'course-2',
+    courseId: "course-2",
     course: {
-      id: 'course-2',
-      title: 'Advanced React',
-      price: 75.00,
-      category: 'Web Development',
-      thumbnailUrl: 'https://example.com/thumb2.jpg',
-      instructor: { id: 'instr-2', name: 'Jane Smith', avatarUrl: null },
-      description: '',
-      level: 'ADVANCED',
+      id: "course-2",
+      title: "Advanced React",
+      price: 75.0,
+      category: "Web Development",
+      thumbnailUrl: "https://example.com/thumb2.jpg",
+      instructor: { id: "instr-2", name: "Jane Smith", avatarUrl: null },
+      description: "",
+      level: "ADVANCED",
       originalPrice: 150,
       totalDuration: 7200,
       totalLessons: 48,
       rating: 4.8,
       reviewCount: 200,
-      status: 'ACTIVE',
+      status: "ACTIVE",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
   },
 ];
 
-const { useCartStore } = await import('@/lib/hooks/use-cart-store');
+const { useCartStore } = await import("@/lib/hooks/use-cart-store");
 
-describe('OrderReview', () => {
+describe("OrderReview", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Empty Cart', () => {
-    it('shows empty state when cart is empty', () => {
+  describe("Empty Cart", () => {
+    it("shows empty state when cart is empty", () => {
       (useCartStore as any).mockReturnValue({
         items: [],
         removeItem: vi.fn(),
@@ -92,10 +93,12 @@ describe('OrderReview', () => {
       });
 
       render(<OrderReview onNext={vi.fn()} />);
-      expect(screen.getByText(/there's nothing to pay for/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/there's nothing to pay for/i),
+      ).toBeInTheDocument();
     });
 
-    it('displays a link to browse courses', () => {
+    it("displays a link to browse courses", () => {
       (useCartStore as any).mockReturnValue({
         items: [],
         removeItem: vi.fn(),
@@ -103,192 +106,203 @@ describe('OrderReview', () => {
       });
 
       render(<OrderReview onNext={vi.fn()} />);
-      expect(screen.getByRole('link', { name: /browse courses/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: /browse courses/i }),
+      ).toBeInTheDocument();
     });
   });
 
-  describe('Items Display', () => {
+  describe("Items Display", () => {
     beforeEach(() => {
       (useCartStore as any).mockReturnValue({
         items: mockCartItems,
         removeItem: vi.fn(),
-        getTotalPrice: vi.fn(() => 125.00),
+        getTotalPrice: vi.fn(() => 125.0),
       });
     });
 
-    it('renders all cart items', () => {
+    it("renders all cart items", () => {
       render(<OrderReview onNext={vi.fn()} />);
-      expect(screen.getByText('React Basics')).toBeInTheDocument();
-      expect(screen.getByText('Advanced React')).toBeInTheDocument();
+      expect(screen.getByText("React Basics")).toBeInTheDocument();
+      expect(screen.getByText("Advanced React")).toBeInTheDocument();
     });
 
-    it('displays course categories', () => {
+    it("displays course categories", () => {
       render(<OrderReview onNext={vi.fn()} />);
-      const categoryElements = screen.getAllByText('Web Development');
+      const categoryElements = screen.getAllByText("Web Development");
       expect(categoryElements.length).toBeGreaterThan(0);
     });
 
-    it('displays instructor names', () => {
+    it("displays instructor names", () => {
       render(<OrderReview onNext={vi.fn()} />);
-      expect(screen.getByText('John Doe')).toBeInTheDocument();
-      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
     });
 
-    it('displays lifetime access and certificate badges', () => {
+    it("displays lifetime access and certificate badges", () => {
       render(<OrderReview onNext={vi.fn()} />);
       const lifeTimeElements = screen.getAllByText(/lifetime access/i);
       expect(lifeTimeElements.length).toBeGreaterThan(0);
     });
   });
 
-  describe('Price Breakdown', () => {
+  describe("Price Breakdown", () => {
     beforeEach(() => {
       (useCartStore as any).mockReturnValue({
         items: mockCartItems,
         removeItem: vi.fn(),
-        getTotalPrice: vi.fn(() => 125.00),
+        getTotalPrice: vi.fn(() => 125.0),
       });
     });
 
-    it('displays subtotal', () => {
+    it("displays subtotal", () => {
       render(<OrderReview onNext={vi.fn()} />);
       expect(screen.getByText(/subtotal/i)).toBeInTheDocument();
     });
 
-    it('calculates and displays platform fee (2.5%)', () => {
+    it("calculates and displays platform fee (2.5%)", () => {
       render(<OrderReview onNext={vi.fn()} />);
       expect(screen.getByText(/platform fee \(2\.5%\)/i)).toBeInTheDocument();
     });
 
-    it('displays total before promo is applied', () => {
+    it("displays total before promo is applied", () => {
       render(<OrderReview onNext={vi.fn()} />);
-      expect(screen.getByText(/total/i)).toBeInTheDocument();
+      expect(screen.getByText(/^total$/i)).toBeInTheDocument();
     });
 
-    it('shows correct course count in subtotal label', () => {
+    it("shows correct course count in subtotal label", () => {
       render(<OrderReview onNext={vi.fn()} />);
       expect(screen.getByText(/subtotal \(2 courses\)/i)).toBeInTheDocument();
     });
   });
 
-  describe('Promo Code', () => {
+  describe("Promo Code", () => {
     beforeEach(() => {
       (useCartStore as any).mockReturnValue({
         items: mockCartItems,
         removeItem: vi.fn(),
-        getTotalPrice: vi.fn(() => 125.00),
+        getTotalPrice: vi.fn(() => 125.0),
       });
-      vi.useFakeTimers();
     });
 
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it('renders promo code input when no promo is applied', () => {
+    it("renders promo code input when no promo is applied", () => {
       render(<OrderReview onNext={vi.fn()} />);
-      expect(screen.getByPlaceholderText(/enter promo code/i)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/enter promo code/i),
+      ).toBeInTheDocument();
     });
 
-    it('shows apply button for promo code', () => {
+    it("shows apply button for promo code", () => {
       render(<OrderReview onNext={vi.fn()} />);
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       expect(applyButton).toBeInTheDocument();
     });
 
-    it('disables apply button when input is empty', () => {
+    it("disables apply button when input is empty", () => {
       render(<OrderReview onNext={vi.fn()} />);
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       expect(applyButton).toBeDisabled();
     });
 
-    it('enables apply button when promo code is entered', async () => {
+    it("enables apply button when promo code is entered", async () => {
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={vi.fn()} />);
       const input = screen.getByPlaceholderText(/enter promo code/i);
-      await user.type(input, 'LEARN10');
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      await user.type(input, "LEARN10");
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       expect(applyButton).not.toBeDisabled();
     });
 
-    it('shows error for invalid promo code', async () => {
+    it("shows error for invalid promo code", async () => {
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={vi.fn()} />);
       const input = screen.getByPlaceholderText(/enter promo code/i);
-      await user.type(input, 'INVALID');
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      await user.type(input, "INVALID");
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/invalid or expired promo code/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/invalid or expired promo code/i),
+        ).toBeInTheDocument();
       });
     });
 
-    it('applies LEARN10 promo code successfully', async () => {
+    it("applies LEARN10 promo code successfully", async () => {
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={vi.fn()} />);
       const input = screen.getByPlaceholderText(/enter promo code/i);
-      await user.type(input, 'LEARN10');
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      await user.type(input, "LEARN10");
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/learn10 — 10% discount applied/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/learn10 — 10% discount applied/i),
+        ).toBeInTheDocument();
       });
     });
 
-    it('applies STUDENT promo code successfully', async () => {
+    it("applies STUDENT promo code successfully", async () => {
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={vi.fn()} />);
       const input = screen.getByPlaceholderText(/enter promo code/i);
-      await user.type(input, 'STUDENT');
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      await user.type(input, "STUDENT");
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/student — 10% discount applied/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/student — 10% discount applied/i),
+        ).toBeInTheDocument();
       });
     });
 
-    it('shows remove button for applied promo', async () => {
+    it("shows remove button for applied promo", async () => {
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={vi.fn()} />);
       const input = screen.getByPlaceholderText(/enter promo code/i);
-      await user.type(input, 'LEARN10');
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      await user.type(input, "LEARN10");
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /^remove$/i }),
+        ).toBeInTheDocument();
       });
     });
 
-    it('removes applied promo when remove button is clicked', async () => {
+    it("removes applied promo when remove button is clicked", async () => {
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={vi.fn()} />);
       const input = screen.getByPlaceholderText(/enter promo code/i);
-      await user.type(input, 'LEARN10');
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      await user.type(input, "LEARN10");
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/learn10 — 10% discount applied/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/learn10 — 10% discount applied/i),
+        ).toBeInTheDocument();
       });
 
-      const removeButton = screen.getByRole('button', { name: /remove/i });
+      const removeButton = screen.getByRole("button", { name: /^remove$/i });
       await user.click(removeButton);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/enter promo code/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/enter promo code/i),
+        ).toBeInTheDocument();
       });
     });
 
-    it('displays discount in price breakdown when applied', async () => {
+    it("displays discount in price breakdown when applied", async () => {
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={vi.fn()} />);
       const input = screen.getByPlaceholderText(/enter promo code/i);
-      await user.type(input, 'LEARN10');
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      await user.type(input, "LEARN10");
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       await user.click(applyButton);
 
       await waitFor(() => {
@@ -297,67 +311,170 @@ describe('OrderReview', () => {
     });
   });
 
-  describe('Item Removal', () => {
-    it('calls removeItem when remove button is clicked', async () => {
+  describe("Item Removal", () => {
+    it("calls removeItem when remove button is clicked", async () => {
       const mockRemoveItem = vi.fn();
       (useCartStore as any).mockReturnValue({
         items: mockCartItems,
         removeItem: mockRemoveItem,
-        getTotalPrice: vi.fn(() => 125.00),
+        getTotalPrice: vi.fn(() => 125.0),
       });
 
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={vi.fn()} />);
-      const removeButtons = screen.getAllByRole('button', { name: /remove/i });
+      const removeButtons = screen.getAllByRole("button", { name: /remove/i });
       await user.click(removeButtons[0]);
 
-      expect(mockRemoveItem).toHaveBeenCalledWith('course-1');
+      expect(mockRemoveItem).toHaveBeenCalledWith("course-1");
     });
   });
 
-  describe('Continue Button', () => {
+  describe("Continue Button", () => {
     beforeEach(() => {
       (useCartStore as any).mockReturnValue({
         items: mockCartItems,
         removeItem: vi.fn(),
-        getTotalPrice: vi.fn(() => 125.00),
+        getTotalPrice: vi.fn(() => 125.0),
       });
     });
 
-    it('renders continue to payment button', () => {
+    it("renders continue to payment button", () => {
       render(<OrderReview onNext={vi.fn()} />);
-      expect(screen.getByRole('button', { name: /continue to payment/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /continue to payment/i }),
+      ).toBeInTheDocument();
     });
 
-    it('calls onNext with discount amount when button is clicked', async () => {
+    it("calls onNext with discount amount when button is clicked", async () => {
       const onNext = vi.fn();
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={onNext} />);
 
-      const continueButton = screen.getByRole('button', { name: /continue to payment/i });
+      const continueButton = screen.getByRole("button", {
+        name: /continue to payment/i,
+      });
       await user.click(continueButton);
 
       expect(onNext).toHaveBeenCalledWith(0);
     });
 
-    it('calls onNext with correct discount when promo is applied', async () => {
+    it("calls onNext with correct discount when promo is applied", async () => {
       const onNext = vi.fn();
       const user = userEvent.setup({ delay: null });
       render(<OrderReview onNext={onNext} />);
 
       const input = screen.getByPlaceholderText(/enter promo code/i);
-      await user.type(input, 'LEARN10');
-      const applyButton = screen.getByRole('button', { name: /apply/i });
+      await user.type(input, "LEARN10");
+      const applyButton = screen.getByRole("button", { name: /apply/i });
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/learn10 — 10% discount applied/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/learn10 — 10% discount applied/i),
+        ).toBeInTheDocument();
       });
 
-      const continueButton = screen.getByRole('button', { name: /continue to payment/i });
+      const continueButton = screen.getByRole("button", {
+        name: /continue to payment/i,
+      });
       await user.click(continueButton);
 
-      expect(onNext).toHaveBeenCalledWith(12.50);
+      expect(onNext).toHaveBeenCalledWith(12.5);
+    });
+  });
+
+  describe("Promo Code Cancellation and Timer Cleanup", () => {
+    it("applies only the second code when submitted twice with different codes", () => {
+      vi.useFakeTimers();
+      render(<OrderReview onNext={vi.fn()} />);
+
+      const input = screen.getByPlaceholderText(/enter promo code/i);
+      const applyButton = screen.getByRole("button", { name: /apply/i });
+
+      // First submission: invalid code via button click
+      fireEvent.change(input, { target: { value: "INVALID" } });
+      fireEvent.click(applyButton);
+
+      // Advance 400ms (midway through validation)
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+
+      // Second submission: valid code while first validation is still in flight
+      fireEvent.change(input, { target: { value: "LEARN10" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Advance past the first timer's original 800ms mark
+      act(() => {
+        vi.advanceTimersByTime(450);
+      });
+
+      // First timer was cancelled/superseded, so no invalid promo error appears
+      expect(
+        screen.queryByText(/invalid or expired promo code/i),
+      ).not.toBeInTheDocument();
+
+      // Complete the remaining time for the second validation
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+
+      // Second code succeeds
+      expect(
+        screen.getByText(/learn10 — 10% discount applied/i),
+      ).toBeInTheDocument();
+      vi.useRealTimers();
+    });
+
+    it("cancels pending validation on unmount without warnings or state updates", () => {
+      vi.useFakeTimers();
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      const { unmount } = render(<OrderReview onNext={vi.fn()} />);
+      const input = screen.getByPlaceholderText(/enter promo code/i);
+      const applyButton = screen.getByRole("button", { name: /apply/i });
+
+      fireEvent.change(input, { target: { value: "LEARN10" } });
+      fireEvent.click(applyButton);
+
+      // Unmount midway through 800ms validation
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      unmount();
+
+      // Complete the remaining time
+      act(() => {
+        vi.advanceTimersByTime(600);
+      });
+
+      // Check no React state update error was logged
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+      vi.useRealTimers();
+    });
+
+    it("disables the apply button while validation is in flight", () => {
+      vi.useFakeTimers();
+      render(<OrderReview onNext={vi.fn()} />);
+
+      const input = screen.getByPlaceholderText(/enter promo code/i);
+      const applyButton = screen.getByRole("button", { name: /apply/i });
+
+      fireEvent.change(input, { target: { value: "LEARN10" } });
+      expect(applyButton).not.toBeDisabled();
+
+      fireEvent.click(applyButton);
+      expect(
+        screen.getByRole("button", { name: /validating\.\.\./i }),
+      ).toBeDisabled();
+
+      act(() => {
+        vi.advanceTimersByTime(800);
+      });
+      vi.useRealTimers();
     });
   });
 });

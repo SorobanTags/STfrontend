@@ -1,142 +1,139 @@
 'use client';
 
-import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Check } from 'lucide-react';
 
-export type PricingTier = {
-  id: string;
+interface PricingTier {
   name: string;
-  badge?: string;
-  tagline: string;
   price: string;
   period: string;
-  teamSize: string;
+  description: string;
   features: string[];
   ctaLabel: string;
   popular?: boolean;
-};
+}
 
-const TIERS: PricingTier[] = [
+interface PricingTiersProps {
+  onSelectTier?: (tierName: string) => void;
+  className?: string;
+}
+
+const tiers: PricingTier[] = [
   {
-    id: 'starter',
     name: 'Starter Team',
-    tagline: 'Ideal for small teams and startups launching skill development.',
-    price: '$299',
-    period: '/ month',
-    teamSize: 'Up to 10 employees',
+    price: '$29',
+    period: '/month',
+    description: 'For small teams getting started with collaborative play.',
     features: [
-      'Access to all 100+ skill courses',
-      'Basic team progress dashboard',
-      'Centralized billing & invoice payment',
-      'Downloadable course certificates',
-      'Standard email support',
+      'Up to 5 team members',
+      'Shared playbooks',
+      'Basic analytics',
+      'Email support',
     ],
     ctaLabel: 'Get Starter Quote',
   },
   {
-    id: 'growth',
-    name: 'Growth Plan',
-    badge: 'Most Popular',
-    popular: true,
-    tagline: 'Best for growing companies expanding upskilling programs.',
-    price: '$799',
-    period: '/ month',
-    teamSize: 'Up to 50 employees',
+    name: 'Pro Team',
+    price: '$79',
+    period: '/month',
+    description: 'For growing teams that need deeper insights and control.',
     features: [
-      'Everything in Starter Team',
-      'Bulk enrollment & CSV team invites',
-      'Advanced analytics & reporting export',
-      'Custom learning path recommendations',
-      'Dedicated account manager',
-      'Priority 24/7 support',
+      'Up to 20 team members',
+      'Advanced playbooks',
+      'Full analytics suite',
+      'Priority support',
+      'Custom integrations',
     ],
-    ctaLabel: 'Get Growth Quote',
+    ctaLabel: 'Get Pro Quote',
+    popular: true,
   },
   {
-    id: 'enterprise',
     name: 'Enterprise',
-    tagline: 'Custom solutions tailored for large organizations and institutions.',
     price: 'Custom',
-    period: 'pricing',
-    teamSize: 'Unlimited employees',
+    period: '',
+    description: 'For organizations with advanced security and scale needs.',
     features: [
-      'Everything in Growth Plan',
-      'Custom course development & branding',
-      'Single Sign-On (SSO) & LMS integration',
-      'Custom SLA & uptime guarantees',
-      'Dedicated learning success strategist',
-      'Quarterly executive reviews',
+      'Unlimited team members',
+      'Dedicated success manager',
+      'SSO & audit logs',
+      'SLA guarantees',
+      'Custom onboarding',
     ],
-    ctaLabel: 'Contact Sales',
+    ctaLabel: 'Get Enterprise Quote',
   },
 ];
 
-type PricingTiersProps = {
-  onSelectTier?: (tierName: string) => void;
-};
-
-export function PricingTiers({ onSelectTier }: PricingTiersProps) {
+export function PricingTiers({ onSelectTier, className }: PricingTiersProps) {
   return (
-    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-      {TIERS.map((tier) => (
-        <div
-          key={tier.id}
-          className={cn(
-            'relative flex flex-col justify-between rounded-3xl border bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-md',
-            tier.popular
-              ? 'border-[#7F77DD] ring-2 ring-[#7F77DD]/20'
-              : 'border-[#D5D2F6]'
-          )}
-        >
-          {tier.badge ? (
-            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#7F77DD] px-3.5 py-1 text-xs font-semibold text-white shadow-sm">
-              {tier.badge}
-            </span>
-          ) : null}
+    <section
+      aria-labelledby="pricing-tiers-heading"
+      className={cn('w-full', className)}
+    >
+      <h2 id="pricing-tiers-heading" className="sr-only">
+        Team pricing tiers
+      </h2>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {tiers.map((tier) => {
+          const badgeId = `pricing-tier-${tier.name
+            .toLowerCase()
+            .replace(/\s+/g, '-')}-badge`;
 
-          <div>
-            <h3 className="text-xl font-bold text-[#26215C]">{tier.name}</h3>
-            <p className="mt-2 text-sm text-[#5A5578]">{tier.tagline}</p>
-
-            <div className="my-6 flex items-baseline gap-1">
-              <span className="font-display text-4xl font-extrabold text-[#26215C]">
-                {tier.price}
-              </span>
-              <span className="text-sm font-medium text-[#5A5578]">
-                {tier.period}
-              </span>
-            </div>
-
-            <div className="mb-6 inline-block rounded-full bg-[#F4F2FF] px-3 py-1 text-xs font-semibold text-[#26215C]">
-              {tier.teamSize}
-            </div>
-
-            <ul className="space-y-3 border-t border-[#EEEDFE] pt-6">
-              {tier.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-3 text-sm text-[#26215C]">
-                  <Check className="h-5 w-5 shrink-0 text-[#7F77DD]" aria-hidden="true" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="mt-8 pt-4">
-            <button
-              type="button"
-              onClick={() => onSelectTier?.(tier.name)}
+          return (
+            <div
+              key={tier.name}
+              aria-describedby={tier.popular ? badgeId : undefined}
               className={cn(
-                'w-full rounded-xl py-3 text-center text-sm font-semibold transition duration-200',
+                'relative flex flex-col rounded-2xl border p-6 shadow-sm',
                 tier.popular
-                  ? 'bg-[#7F77DD] text-white hover:bg-[#6860C7] shadow-sm'
-                  : 'border border-[#7F77DD] bg-white text-[#26215C] hover:bg-[#F4F2FF]'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border bg-card'
               )}
             >
-              {tier.ctaLabel}
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
+              {tier.popular && (
+                <span
+                  id={badgeId}
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground"
+                >
+                  Most Popular
+                </span>
+              )}
+              <h3 className="text-lg font-semibold">{tier.name}</h3>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-3xl font-bold">{tier.price}</span>
+                {tier.period && (
+                  <span className="text-sm text-muted-foreground">
+                    {tier.period}
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {tier.description}
+              </p>
+              <ul className="mt-4 flex-1 space-y-2">
+                {tier.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                aria-label={`${tier.ctaLabel} for ${tier.name}`}
+                onClick={() => onSelectTier?.(tier.name)}
+                className={cn(
+                  'mt-6 w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+                  tier.popular
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'border border-border bg-background hover:bg-muted'
+                )}
+              >
+                {tier.ctaLabel}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }

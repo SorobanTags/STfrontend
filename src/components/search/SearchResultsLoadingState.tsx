@@ -5,6 +5,9 @@ export function ResultsCountSkeleton() {
   return (
     <span
       data-testid="results-count-skeleton"
+      role="status"
+      aria-label="Loading results count"
+      aria-busy="true"
       className="inline-block h-5 w-24 rounded bg-sorobanlard-lilac animate-pulse"
     />
   );
@@ -12,7 +15,13 @@ export function ResultsCountSkeleton() {
 
 export function FilterSidebarSkeleton() {
   return (
-    <div data-testid="filter-sidebar-skeleton" className="space-y-6">
+    <div
+      data-testid="filter-sidebar-skeleton"
+      role="status"
+      aria-label="Loading filters"
+      aria-busy="true"
+      className="space-y-6"
+    >
       <div className="flex items-center justify-between lg:hidden mb-4">
         <div className="h-6 w-24 rounded bg-sorobanlard-lilac animate-pulse" />
         <div className="h-6 w-6 rounded bg-sorobanlard-lilac animate-pulse" />
@@ -41,7 +50,13 @@ export function FilterSidebarSkeleton() {
 
 export function ResultsGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+    <div
+      data-testid="results-grid-skeleton"
+      role="status"
+      aria-label="Loading results"
+      aria-busy="true"
+      className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8"
+    >
       {Array.from({ length: 8 }).map((_, index) => (
         <CourseCardSkeleton key={index} />
       ))}

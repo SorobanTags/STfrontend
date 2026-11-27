@@ -40,6 +40,29 @@ export const PUBLIC_ROUTES: Array<{
     { path: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
   ];
 
+/** The site favicon. Shared with the root layout because a page that sets
+ * `icons` (see buildPaginatedMetadata) replaces the layout's `icons`. */
+export const SITE_ICON = '/favicon.svg';
+
+/**
+ * rel="prev"/"next" links for page `currentPage` of `totalPages` (#95).
+ * Page 1 has no prev, the last page no next, and nothing points past
+ * `totalPages`. Page 1's URL is the bare base path.
+ */
+export function paginationLinks(
+  basePath: string,
+  currentPage: number,
+  totalPages: number,
+): Array<{ rel: 'prev' | 'next'; url: string }> {
+  const last = Math.max(1, Math.floor(totalPages) || 1);
+  const page = Math.min(Math.max(1, Math.floor(currentPage) || 1), last);
+  const pageUrl = (n: number) => absoluteUrl(n === 1 ? basePath : `${basePath}?page=${n}`);
+  const links: Array<{ rel: 'prev' | 'next'; url: string }> = [];
+  if (page > 1) links.push({ rel: 'prev', url: pageUrl(page - 1) });
+  if (page < last) links.push({ rel: 'next', url: pageUrl(page + 1) });
+  return links;
+}
+
 export function absoluteUrl(path: string): string {
   return `${siteUrl}${path.startsWith('/') ? path : `/${path}`}`;
 }
@@ -110,6 +133,7 @@ export function buildPaginatedMetadata({
   totalPages,
   images,
   type = 'website',
+  canonicalPerPage = false,
 }: {
   title?: string;
   description?: string;
@@ -119,11 +143,26 @@ export function buildPaginatedMetadata({
   totalPages: number;
   images?: string[];
   type?: 'website' | 'article';
+  /** Give each page its own canonical instead of page 1's (#91). */
+  canonicalPerPage?: boolean;
 }): Metadata {
-  // Canonical always points to page 1 (no query param)
-  const canonicalUrl = absoluteUrl(basePath);
+  // By default every page canonicalises to page 1 (the bare path). With
+  // `canonicalPerPage`, each page is its own canonical instead, clamped to the
+  // real page range so invalid or out-of-range pages never get one (#91).
+  const lastPage = Math.max(1, Math.floor(totalPages) || 1);
+  const canonicalPage = canonicalPerPage
+    ? Math.min(Math.max(1, Math.floor(currentPage) || 1), lastPage)
+    : 1;
+  const canonicalUrl = absoluteUrl(
+    canonicalPage === 1 ? basePath : `${basePath}?page=${canonicalPage}`,
+  );
   const resolvedDescription = description ?? siteConfig.description;
   const socialTitle = title ? `${title} | ${siteConfig.name}` : siteConfig.name;
+
+  // Next 14's Metadata API has no prev/next field; `icons.other` renders
+  // arbitrary <link rel> tags in <head>. It replaces the layout's `icons`, so
+  // the favicon is repeated here.
+  const links = paginationLinks(basePath, currentPage, totalPages);
 
   return {
     ...(title ? { title } : {}),
@@ -131,6 +170,7 @@ export function buildPaginatedMetadata({
     alternates: {
       canonical: canonicalUrl,
     },
+    icons: { icon: SITE_ICON, ...(links.length > 0 ? { other: links } : {}) },
     openGraph: {
       type,
       url: canonicalUrl,

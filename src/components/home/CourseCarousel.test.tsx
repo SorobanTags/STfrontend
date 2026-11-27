@@ -1,13 +1,18 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Course } from '@/types';
+
+vi.mock('@/lib/hooks/use-reduced-motion', () => ({
+  useReducedMotion: vi.fn(),
+}));
 
 vi.mock('@/components/courses/CourseCard', () => ({
   CourseCard: ({ course }: { course: Course }) => <div data-testid="course-card">{course.title}</div>,
 }));
 
 import { CourseCarousel } from './CourseCarousel';
+import { useReducedMotion } from '@/lib/hooks/use-reduced-motion';
 
 const COURSES = Array.from({ length: 5 }, (_, i) => ({
   id: `c-${i + 1}`,
@@ -135,5 +140,119 @@ describe('CourseCarousel swipe handling', () => {
 
     expect(scrollBy).toHaveBeenCalledTimes(1);
     expect(scrollBy).toHaveBeenCalledWith({ left: -STEP, behavior: 'smooth' });
+  });
+});
+
+describe('CourseCarousel reduced motion autoplay', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 500 });
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, value: 2000 });
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, value: 200 });
+    Element.prototype.scrollBy = vi.fn();
+    Element.prototype.scrollTo = vi.fn();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.clearAllMocks();
+  });
+
+  it('does not advance carousel on timer when useReducedMotion returns true', () => {
+    vi.mocked(useReducedMotion).mockReturnValue({
+      prefersReducedMotion: true,
+      hasManualOverride: false,
+      setManualOverride: vi.fn(),
+      clearManualOverride: vi.fn(),
+      mounted: true,
+    });
+
+    render(
+      <CourseCarousel
+        title="Featured Courses"
+        seeAllHref="/courses"
+        courses={COURSES}
+        autoplay={true}
+        autoplayInterval={4000}
+      />,
+    );
+
+    const scrollBySpy = vi.spyOn(Element.prototype, 'scrollBy');
+    const scrollToSpy = vi.spyOn(Element.prototype, 'scrollTo');
+    scrollBySpy.mockClear();
+    scrollToSpy.mockClear();
+
+    act(() => {
+      vi.advanceTimersByTime(4000);
+      vi.advanceTimersByTime(4000);
+    });
+
+    expect(scrollBySpy).not.toHaveBeenCalled();
+    expect(scrollToSpy).not.toHaveBeenCalled();
+  });
+
+  it('advances carousel on timer when useReducedMotion returns false', () => {
+    vi.mocked(useReducedMotion).mockReturnValue({
+      prefersReducedMotion: false,
+      hasManualOverride: false,
+      setManualOverride: vi.fn(),
+      clearManualOverride: vi.fn(),
+      mounted: true,
+    });
+
+    render(
+      <CourseCarousel
+        title="Featured Courses"
+        seeAllHref="/courses"
+        courses={COURSES}
+        autoplay={true}
+        autoplayInterval={4000}
+      />,
+    );
+
+    const scrollBySpy = vi.spyOn(Element.prototype, 'scrollBy');
+    scrollBySpy.mockClear();
+
+    act(() => {
+      vi.advanceTimersByTime(4000);
+    });
+
+    expect(scrollBySpy).toHaveBeenCalledTimes(1);
+    expect(scrollBySpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        behavior: 'smooth',
+      }),
+    );
+  });
+
+  it('allows manual arrow and dot navigation even when reduced motion is preferred', () => {
+    vi.mocked(useReducedMotion).mockReturnValue({
+      prefersReducedMotion: true,
+      hasManualOverride: false,
+      setManualOverride: vi.fn(),
+      clearManualOverride: vi.fn(),
+      mounted: true,
+    });
+
+    render(
+      <CourseCarousel
+        title="Featured Courses"
+        seeAllHref="/courses"
+        courses={COURSES}
+        autoplay={true}
+      />,
+    );
+
+    const scrollToSpy = vi.spyOn(Element.prototype, 'scrollTo');
+
+    const dotButtons = screen.getAllByRole('tab');
+    expect(dotButtons.length).toBe(COURSES.length);
+
+    fireEvent.click(dotButtons[1]);
+    expect(scrollToSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        behavior: 'smooth',
+      }),
+    );
   });
 });

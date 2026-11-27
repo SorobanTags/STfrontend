@@ -14,6 +14,7 @@ interface InProgressItem {
 }
 
 interface StatItem {
+  id: string;
   label: string;
   value: string | number;
 }
@@ -37,9 +38,9 @@ export function StudentDashboard({
   ];
 
   const resolvedStats: StatItem[] = stats ?? [
-    { label: 'Courses',      value: 3  },
-    { label: 'Hours',        value: '12h' },
-    { label: 'Certificates', value: 1  },
+    { id: 'courses', label: 'Courses',      value: 3  },
+    { id: 'hours', label: 'Hours',        value: '12h' },
+    { id: 'certificates', label: 'Certificates', value: 1  },
   ];
 
   return (

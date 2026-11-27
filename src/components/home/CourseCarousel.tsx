@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/hooks/use-reduced-motion';
 import { CourseCard } from '@/components/courses/CourseCard';
 import { CourseCardSkeleton } from '@/components/courses/CourseCardSkeleton';
 import type { Course } from '@/types';
@@ -46,6 +47,8 @@ export function CourseCarousel({
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [activeDot, setActiveDot] = useState(0);
+
+  const { prefersReducedMotion } = useReducedMotion();
 
   // Autoplay state: paused on hover, and permanently stopped after manual interaction.
   const [isHovering, setIsHovering] = useState(false);
@@ -130,7 +133,7 @@ export function CourseCarousel({
 
   // Autoplay: advance one card at a time, looping back to the start.
   useEffect(() => {
-    if (!autoplay || loading || userInteracted || isHovering) return;
+    if (!autoplay || loading || userInteracted || isHovering || prefersReducedMotion) return;
     if (courses.length <= 1) return;
 
     const id = window.setInterval(() => {
@@ -146,7 +149,7 @@ export function CourseCarousel({
     }, autoplayInterval);
 
     return () => window.clearInterval(id);
-  }, [autoplay, autoplayInterval, loading, userInteracted, isHovering, courses.length]);
+  }, [autoplay, autoplayInterval, loading, userInteracted, isHovering, courses.length, prefersReducedMotion]);
 
   // Touch swipe handlers — horizontal swipes navigate, vertical swipes scroll the page.
   function handleTouchStart(e: React.TouchEvent<HTMLDivElement>) {

@@ -118,7 +118,7 @@ function snapshot(state: SearchStore): SearchSnapshot {
 }
 
 /** True when a snapshot has no query text and no active filters. */
-function isEmptySnapshot(s: SearchSnapshot): boolean {
+export function isEmptySnapshot(s: SearchSnapshot): boolean {
   return (
     s.query.trim() === '' &&
     s.selectedCategories.length === 0 &&

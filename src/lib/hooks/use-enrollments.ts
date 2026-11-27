@@ -3,6 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { enrollmentsApi, usersApi } from '@/lib/api/services';
 
 /**
+ * Query key for the current instructor's stats (revenue, student counts).
+ * Defined once so the query and every invalidation stay in step (#121).
+ */
+export const INSTRUCTOR_STATS_QUERY_KEY = ['users', 'me', 'instructor-stats'] as const;
+
+/**
  * Hook to fetch user's enrollments
  * Stale time: 2 minutes
  */
@@ -34,7 +40,7 @@ export const useCurrentUser = () => {
  */
 export const useInstructorStats = () => {
   return useQuery({
-    queryKey: ['users', 'me', 'instructor-stats'],
+    queryKey: INSTRUCTOR_STATS_QUERY_KEY,
     queryFn: () => usersApi.getInstructorStats(),
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
@@ -53,13 +59,16 @@ export const useUpdateUser = () => {
       usersApi.updateMe(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'me'] });
+      // Already covered by the ['users', 'me'] prefix, but explicit so
+      // renaming either key can't silently drop it (#121).
+      queryClient.invalidateQueries({ queryKey: INSTRUCTOR_STATS_QUERY_KEY });
     },
   });
 };
 
 /**
  * Mutation hook for creating enrollments
- * Invalidates enrollments and course lists on success
+ * Invalidates enrollments, the course, and instructor stats on success
  */
 export const useCreateEnrollment = () => {
   const queryClient = useQueryClient();
@@ -73,6 +82,8 @@ export const useCreateEnrollment = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
       queryClient.invalidateQueries({ queryKey: ['courses', data.courseId] });
+      // A new enrollment changes the instructor's revenue and student counts.
+      queryClient.invalidateQueries({ queryKey: INSTRUCTOR_STATS_QUERY_KEY });
     },
   });
 };
