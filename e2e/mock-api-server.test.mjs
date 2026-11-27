@@ -20,6 +20,11 @@ async function get(path) {
   return { status: response.status, body: await response.json() };
 }
 
+async function send(method, path) {
+  const response = await fetch(`${baseUrl}${path}`, { method });
+  return { status: response.status, body: await response.json() };
+}
+
 describe('mock API server', () => {
   it('responds to the health check', async () => {
     const { status, body } = await get('/health');
@@ -85,5 +90,35 @@ describe('mock API server', () => {
     const { status, body } = await get('/api/v1/courses/unknown-id');
     expect(status).toBe(404);
     expect(body.success).toBe(false);
+  });
+
+  describe('notifications (#127)', () => {
+    it('lists the seeded feed with 3 unread', async () => {
+      await send('POST', '/__test__/notifications/reset');
+      const { status, body } = await get('/api/v1/notifications');
+      expect(status).toBe(200);
+      expect(body.data.data).toHaveLength(4);
+      expect(body.data.data.filter((n) => !n.read)).toHaveLength(3);
+    });
+
+    it('marks one read and keeps it read', async () => {
+      await send('POST', '/__test__/notifications/reset');
+      expect((await send('PATCH', '/api/v1/notifications/notif-enrollment/read')).status).toBe(200);
+      const { body } = await get('/api/v1/notifications?unreadOnly=true');
+      expect(body.data.data.map((n) => n.id)).toEqual(['notif-certificate', 'notif-announcement']);
+      expect((await send('PATCH', '/api/v1/notifications/missing/read')).status).toBe(404);
+    });
+
+    it('marks all read with PATCH or POST, and reset restores the seed', async () => {
+      for (const method of ['PATCH', 'POST']) {
+        await send('POST', '/__test__/notifications/reset');
+        await send(method, '/api/v1/notifications/read-all');
+        const { body } = await get('/api/v1/notifications?unreadOnly=true');
+        expect(body.data.data).toHaveLength(0);
+      }
+      await send('POST', '/__test__/notifications/reset');
+      const { body } = await get('/api/v1/notifications?unreadOnly=true');
+      expect(body.data.data).toHaveLength(3);
+    });
   });
 });
