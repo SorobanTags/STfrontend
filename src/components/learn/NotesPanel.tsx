@@ -172,6 +172,9 @@ export default function NotesPanel({
     }
   };
 
+  // #93: with no notes, export is shown but disabled and can't be opened.
+  const hasNotes = notes.length > 0;
+
   const exportMeta = { courseTitle, lectureTitle };
   const fallbackName = `${courseId}-${lectureId}`;
 
@@ -199,44 +202,50 @@ export default function NotesPanel({
             <FileText className="w-4 h-4 text-saffron-500" />
             Notes
           </h3>
-          {notes.length > 0 && (
-            <div ref={exportMenuRef} className="relative">
-              <button
-                onClick={() => setExportMenuOpen((o) => !o)}
-                className="flex items-center gap-1 text-xs font-medium text-ink-500 hover:text-ink-700 transition-colors"
-                aria-haspopup="menu"
-                aria-expanded={exportMenuOpen}
-                title="Export notes"
+          <div ref={exportMenuRef} className="relative">
+            <button
+              onClick={() => {
+                if (hasNotes) setExportMenuOpen((o) => !o);
+              }}
+              disabled={!hasNotes}
+              aria-disabled={!hasNotes}
+              className="flex items-center gap-1 text-xs font-medium text-ink-500 hover:text-ink-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              aria-haspopup="menu"
+              aria-expanded={hasNotes && exportMenuOpen}
+              title={hasNotes ? 'Export notes' : 'Add a note to enable export'}
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            {hasNotes && exportMenuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-1 w-40 z-20 bg-white border border-ink-100 rounded-lg shadow-lg py-1"
               >
-                <Download className="w-3.5 h-3.5" />
-                Export
-                <ChevronDown className="w-3 h-3" />
-              </button>
-              {exportMenuOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 mt-1 w-40 z-20 bg-white border border-ink-100 rounded-lg shadow-lg py-1"
+                <button
+                  role="menuitem"
+                  onClick={handleExportMarkdown}
+                  disabled={!hasNotes}
+                  aria-disabled={!hasNotes}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-ink-700 hover:bg-ink-50 text-left"
                 >
-                  <button
-                    role="menuitem"
-                    onClick={handleExportMarkdown}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-ink-700 hover:bg-ink-50 text-left"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-ink-400" />
-                    Markdown (.md)
-                  </button>
-                  <button
-                    role="menuitem"
-                    onClick={handleExportPdf}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-ink-700 hover:bg-ink-50 text-left"
-                  >
-                    <FileDown className="w-3.5 h-3.5 text-ink-400" />
-                    PDF
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+                  <FileText className="w-3.5 h-3.5 text-ink-400" />
+                  Markdown (.md)
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={handleExportPdf}
+                  disabled={!hasNotes}
+                  aria-disabled={!hasNotes}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-ink-700 hover:bg-ink-50 text-left"
+                >
+                  <FileDown className="w-3.5 h-3.5 text-ink-400" />
+                  PDF
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Input area */}

@@ -39,6 +39,7 @@ export async function generateMetadata({
     basePath: '/courses',
     currentPage,
     totalPages,
+    canonicalPerPage: true,
   });
 }
 

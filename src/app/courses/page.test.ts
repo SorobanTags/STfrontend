@@ -69,4 +69,21 @@ describe('/courses generateMetadata (#95)', () => {
     const md = await generateMetadata({ searchParams: {} });
     expect((md.icons as { icon?: string }).icon).toBe('/favicon.svg');
   });
+
+  describe('page parameter edge cases (#91)', () => {
+    it('page 2 has its own canonical and a prev link', async () => {
+      catalogue(COURSES_PAGE_SIZE * 3);
+      const md = await generateMetadata({ searchParams: { page: '2' } });
+      expect(md.alternates?.canonical).toBe(absoluteUrl('/courses?page=2'));
+      expect(links(md).prev).toBe(absoluteUrl('/courses'));
+    });
+
+    it.each(['abc', '0', '-3'])('page %p falls back to page 1, identical to no param', async (page) => {
+      catalogue(COURSES_PAGE_SIZE * 3);
+      const baseline = await generateMetadata({ searchParams: {} });
+      const md = await generateMetadata({ searchParams: { page } });
+      expect(md.alternates?.canonical).toBe(absoluteUrl('/courses'));
+      expect(md).toEqual(baseline);
+    });
+  });
 });
