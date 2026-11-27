@@ -31,19 +31,34 @@ interface NotesPanelProps {
 
 const STORAGE_PREFIX = 'sorobanlard_notes';
 
-const storageKey = (courseId: string, lectureId: string) =>
+export const storageKey = (courseId: string, lectureId: string) =>
   `${STORAGE_PREFIX}_${courseId}_${lectureId}`;
 
-const loadNotes = (courseId: string, lectureId: string): Note[] => {
+export const loadNotes = (courseId: string, lectureId: string): Note[] => {
+  const key = storageKey(courseId, lectureId);
+  let raw: string | null;
   try {
-    const raw = localStorage.getItem(storageKey(courseId, lectureId));
-    return raw ? (JSON.parse(raw) as Note[]) : [];
-  } catch {
+    raw = localStorage.getItem(key);
+  } catch (e) {
+    console.warn(`Could not read notes from localStorage (${key}):`, e);
+    return [];
+  }
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      console.warn(`Ignoring stored notes for ${key}: expected an array.`);
+      return [];
+    }
+    return parsed as Note[];
+  } catch (e) {
+    // Don't throw: start empty, but say why the student's notes are missing.
+    console.warn(`Stored notes for ${key} are corrupt and were not loaded:`, e);
     return [];
   }
 };
 
-const saveNotes = (courseId: string, lectureId: string, notes: Note[]) => {
+export const saveNotes = (courseId: string, lectureId: string, notes: Note[]) => {
   try {
     localStorage.setItem(storageKey(courseId, lectureId), JSON.stringify(notes));
   } catch (e) {
@@ -62,7 +77,10 @@ export default function NotesPanel({
   courseTitle,
   lectureTitle,
 }: NotesPanelProps) {
-  const [notes, setNotes] = useState<Note[]>([]);
+  // Notes are tagged with the storage key they were loaded from, so an update
+  // can tell whether it targets the lecture currently on screen.
+  const [loaded, setLoaded] = useState<{ key: string; notes: Note[] }>({ key: '', notes: [] });
+  const notes = loaded.notes;
   const [text, setText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
@@ -88,20 +106,27 @@ export default function NotesPanel({
 
   // Load notes on mount / when lecture changes
   useEffect(() => {
-    setNotes(loadNotes(courseId, lectureId));
+    setLoaded({ key: storageKey(courseId, lectureId), notes: loadNotes(courseId, lectureId) });
     setText('');
   }, [courseId, lectureId]);
 
-  // Persist notes whenever they change
+  // Apply `updater` to the notes of an explicit lecture and persist them under
+  // that lecture's key. The target is passed in by the caller (captured when
+  // the user acted), never read from props at write time, so a lecture switch
+  // between the action and the write can't redirect the save.
   const updateNotes = useCallback(
-    (updater: (prev: Note[]) => Note[]) => {
-      setNotes((prev) => {
-        const next = updater(prev);
-        saveNotes(courseId, lectureId, next);
-        return next;
+    (targetCourseId: string, targetLectureId: string, updater: (prev: Note[]) => Note[]) => {
+      const key = storageKey(targetCourseId, targetLectureId);
+      setLoaded((prev) => {
+        // If the panel has moved to another lecture, build on that lecture's
+        // stored notes rather than whatever is on screen.
+        const base = prev.key === key ? prev.notes : loadNotes(targetCourseId, targetLectureId);
+        const next = updater(base);
+        saveNotes(targetCourseId, targetLectureId, next);
+        return prev.key === key ? { key, notes: next } : prev;
       });
     },
-    [courseId, lectureId],
+    [],
   );
 
   const handleSave = () => {
@@ -120,14 +145,14 @@ export default function NotesPanel({
       createdAt: new Date().toISOString(),
     };
 
-    updateNotes((prev) => [newNote, ...prev]);
+    updateNotes(courseId, lectureId, (prev) => [newNote, ...prev]);
     setText('');
     setIsSaving(false);
     textareaRef.current?.focus();
   };
 
   const handleDelete = (id: string) => {
-    updateNotes((prev) => prev.filter((n) => n.id !== id));
+    updateNotes(courseId, lectureId, (prev) => prev.filter((n) => n.id !== id));
   };
 
   const handleTimestampClick = (timestamp: number) => {
