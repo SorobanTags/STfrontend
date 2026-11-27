@@ -1,12 +1,4 @@
-import type { Metadata } from 'next';
-import { buildMetadata } from '@/lib/seo';
-
-export const metadata: Metadata = buildMetadata({
-  title: 'Log In',
-  description: 'Log in to SorobanLard to continue your courses, track progress and claim certificates.',
-  path: '/login',
-});
-
+// Pass-through: /login's metadata is declared on the page (#92).
 export default function LoginLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
