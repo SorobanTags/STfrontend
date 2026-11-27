@@ -3,7 +3,7 @@ import Script from 'next/script';
 import '@/styles/globals.css';
 import { Providers } from './providers';
 import { Footer } from '@/components/layout/Footer';
-import { siteConfig, siteUrl } from '@/lib/seo';
+import { siteConfig, siteUrl, SITE_ICON } from '@/lib/seo';
 import { WebVitalsReporter } from '@/components/WebVitalsReporter';
 import { RouteAnnouncer } from '@/components/ui/RouteAnnouncer';
 
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     'Africa e-learning',
     'SorobanLard',
   ],
-  icons: { icon: '/favicon.svg' },
+  icons: { icon: SITE_ICON },
   alternates: { canonical: siteUrl },
   openGraph: {
     type: 'website',

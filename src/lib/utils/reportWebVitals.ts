@@ -11,35 +11,44 @@ const THRESHOLDS = {
   LCP: 2500,
 } as const;
 
-const sendToAnalytics = (metric: WebVitalMetric) => {
+/**
+ * Best-effort delivery (#94): every failure, whether serialisation, a
+ * throwing sendBeacon, or a rejected or failed fetch, is caught and logged
+ * with console.warn, so a broken analytics endpoint can never throw out of
+ * the Next.js vitals callback or leave an unhandled rejection.
+ */
+const sendToAnalytics = async (metric: WebVitalMetric): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return;
 
-  const payload = JSON.stringify({
-    name: metric.name,
-    value: metric.value,
-    rating: metric.rating,
-    path: typeof window !== 'undefined' ? window.location.pathname : undefined,
-    timestamp: Date.now(),
-  });
-
   try {
+    const payload = JSON.stringify({
+      name: metric.name,
+      value: metric.value,
+      rating: metric.rating,
+      path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+      timestamp: Date.now(),
+    });
+
     if (typeof navigator !== 'undefined' && 'sendBeacon' in navigator) {
       navigator.sendBeacon(ANALYTICS_ENDPOINT, new Blob([payload], { type: 'application/json' }));
       return;
     }
 
-    fetch(ANALYTICS_ENDPOINT, {
+    const res = await fetch(ANALYTICS_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: payload,
       keepalive: true,
-    }).catch(() => undefined);
-  } catch {
-    // Intentionally ignored: analytics is a best-effort stub in production.
+    });
+    if (res && res.ok === false) {
+      console.warn(`[Web Vitals] analytics endpoint returned ${res.status} for ${metric.name}`);
+    }
+  } catch (error) {
+    console.warn(`[Web Vitals] failed to report ${metric.name}:`, error);
   }
 };
 
-export const reportWebVitals = (metric: WebVitalMetric) => {
+export const reportWebVitals = async (metric: WebVitalMetric): Promise<void> => {
   if (!CORE_WEB_VITALS.has(metric.name)) return;
 
   const logDetails = {
@@ -61,6 +70,6 @@ export const reportWebVitals = (metric: WebVitalMetric) => {
   }
 
   if (process.env.NODE_ENV === 'production') {
-    sendToAnalytics(metric);
+    await sendToAnalytics(metric);
   }
 };

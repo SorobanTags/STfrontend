@@ -11,9 +11,16 @@ export interface NotesExportMeta {
   lectureTitle?: string;
 }
 
+/** Normalise a timestamp to a finite, non-negative, whole number of seconds. */
+export const formatTimestamp = (timestamp: number): number => {
+  const value = Number(timestamp);
+  if (!Number.isFinite(value) || value < 0) return 0;
+  return Math.floor(value);
+};
+
 /** Notes are stored newest-first; exports read better in video order. */
 const sortByTimestamp = (notes: ExportableNote[]) =>
-  [...notes].sort((a, b) => a.timestamp - b.timestamp);
+  [...notes].sort((a, b) => formatTimestamp(a.timestamp) - formatTimestamp(b.timestamp));
 
 const slugify = (value: string) =>
   value
@@ -39,7 +46,7 @@ export const notesToMarkdown = (notes: ExportableNote[], meta: NotesExportMeta =
   lines.push('', `_Exported ${new Date().toLocaleString()} · ${notes.length} note${notes.length === 1 ? '' : 's'}_`, '');
 
   for (const note of sortByTimestamp(notes)) {
-    lines.push(`## [${formatDuration(note.timestamp)}]`, '', note.text.trim(), '');
+    lines.push(`## [${formatDuration(formatTimestamp(note.timestamp))}]`, '', note.text.trim(), '');
   }
 
   return lines.join('\n');
@@ -80,7 +87,7 @@ export const printNotesAsPdf = (notes: ExportableNote[], meta: NotesExportMeta =
     .map(
       (note) => `
         <article class="note">
-          <span class="ts">${formatDuration(note.timestamp)}</span>
+          <span class="ts">${escapeHtml(formatDuration(formatTimestamp(note.timestamp)))}</span>
           <p>${escapeHtml(note.text.trim())}</p>
         </article>`,
     )
@@ -104,7 +111,7 @@ export const printNotesAsPdf = (notes: ExportableNote[], meta: NotesExportMeta =
 </head>
 <body>
   <h1>${escapeHtml(title)}</h1>
-  <p class="meta">${meta.courseTitle ? `${escapeHtml(meta.courseTitle)} · ` : ''}${notes.length} note${notes.length === 1 ? '' : 's'} · Exported ${escapeHtml(new Date().toLocaleString())}</p>
+  <p class="meta">${meta.courseTitle ? `${escapeHtml(meta.courseTitle)} · ` : ''}${escapeHtml(String(notes.length))} note${notes.length === 1 ? '' : 's'} · Exported ${escapeHtml(new Date().toLocaleString())}</p>
   ${items}
 </body>
 </html>`;

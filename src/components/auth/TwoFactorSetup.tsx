@@ -18,6 +18,9 @@ export function TwoFactorSetup() {
   const [codeError, setCodeError] = useState<string>('');
   const [showBackupCodes, setShowBackupCodes] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isDisableDialogOpen, setIsDisableDialogOpen] = useState(false);
+  const [disableCode, setDisableCode] = useState('');
+  const [disableError, setDisableError] = useState<string>('');
 
   const handleEnable = async () => {
     setIsLoading(true);
@@ -41,6 +44,13 @@ export function TwoFactorSetup() {
     const digitsOnly = value.replace(/\D/g, '').slice(0, 6);
     setCode(digitsOnly);
     if (codeError) setCodeError('');
+  };
+
+  const handleDisableCodeChange = (value: string) => {
+    // Restrict input to numeric characters only, capped at 6 digits.
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 6);
+    setDisableCode(digitsOnly);
+    if (disableError) setDisableError('');
   };
 
   const handleVerifyCode = async () => {
@@ -75,13 +85,35 @@ export function TwoFactorSetup() {
     }
   };
 
+  const openDisableDialog = () => {
+    setDisableCode('');
+    setDisableError('');
+    setIsDisableDialogOpen(true);
+  };
+
+  const closeDisableDialog = () => {
+    if (isLoading) return;
+    setIsDisableDialogOpen(false);
+    setDisableCode('');
+    setDisableError('');
+  };
+
   const handleDisable = async () => {
-    const confirmCode = prompt('Enter your 6-digit 2FA code to disable two-factor authentication:');
-    if (!confirmCode) return;
+    setDisableError('');
+
+    // Validate code format before hitting the API
+    try {
+      twoFactorCodeSchema.parse({ code: disableCode });
+    } catch (err: any) {
+      setDisableError(err.errors?.[0]?.message || 'Invalid code format');
+      return;
+    }
 
     setIsLoading(true);
     try {
-      await twoFactorApi.disable(confirmCode);
+      await twoFactorApi.disable(disableCode);
+      setIsDisableDialogOpen(false);
+      setDisableCode('');
       setStep('inactive');
       setBackupCodes([]);
       setCode('');
@@ -91,6 +123,7 @@ export function TwoFactorSetup() {
       });
     } catch (error: any) {
       const message = error?.response?.data?.message || 'Invalid code. Please try again.';
+      setDisableError(message);
       toast.error({
         title: 'Error',
         description: message,
@@ -124,6 +157,83 @@ export function TwoFactorSetup() {
     });
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const disableDialog = isDisableDialogOpen ? (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="disable-2fa-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+    >
+      <div className="w-full max-w-md space-y-4 rounded-[16px] bg-white p-6 shadow-xl">
+        <h3 id="disable-2fa-title" className="font-semibold text-[#26215C]">
+          Disable Two-Factor Authentication
+        </h3>
+        <p className="text-sm text-[#5A5578]">
+          Enter your 6-digit 2FA code to disable two-factor authentication.
+        </p>
+        <div className="space-y-3">
+          <label htmlFor="disable-2fa-code" className="block text-sm font-medium text-[#26215C]">
+            6-digit code
+          </label>
+          <input
+            id="disable-2fa-code"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="one-time-code"
+            maxLength={6}
+            placeholder="000000"
+            value={disableCode}
+            onChange={(e) => handleDisableCodeChange(e.target.value)}
+            aria-invalid={disableError ? true : undefined}
+            aria-describedby={disableError ? 'disable-2fa-code-error' : undefined}
+            className={`w-full rounded-xl border px-4 py-3 text-center text-2xl font-semibold tracking-widest outline-none transition ${
+              disableError
+                ? 'border-red-400 bg-red-50/40'
+                : 'border-[#D3D0F2] focus:border-[#7F77DD]'
+            }`}
+            disabled={isLoading}
+          />
+          {disableError && (
+            <p
+              id="disable-2fa-code-error"
+              role="alert"
+              className="flex items-center gap-1 text-xs text-red-600"
+            >
+              <AlertCircle className="h-3 w-3" />
+              {disableError}
+            </p>
+          )}
+        </div>
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={closeDisableDialog}
+            disabled={isLoading}
+            className="rounded-xl border border-[#D3D0F2] px-4 py-2 text-sm font-semibold text-[#26215C] transition hover:bg-[#EEEDFE] disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleDisable}
+            disabled={isLoading}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#7F77DD] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#3C3489] disabled:opacity-50"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Disabling...
+              </>
+            ) : (
+              'Disable'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
 
   if (step === 'inactive') {
     return (
@@ -239,56 +349,58 @@ export function TwoFactorSetup() {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <h3 className="font-semibold text-[#26215C]">Backup Codes</h3>
             <button
-              type="button"
-              onClick={() => setShowBackupCodes(!showBackupCodes)}
-              className="text-[#7F77DD] hover:text-[#3C3489]"
-              aria-label={showBackupCodes ? 'Hide codes' : 'Show codes'}
+              onClick={() => setShowBackupCodes((prev) => !prev)}
+              className="inline-flex items-center gap-1 text-sm font-medium text-[#7F77DD] hover:text-[#3C3489]"
             >
               {showBackupCodes ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showBackupCodes ? 'Hide' : 'Show'}
             </button>
           </div>
+          <p className="mt-2 text-sm text-[#5A5578]">
+            Each backup code can be used once if you lose access to your authenticator app.
+          </p>
 
-          <div className="rounded-[16px] border border-[#D3D0F2] bg-[#F8F7FF] p-4">
-            <div className="grid grid-cols-2 gap-2 font-mono text-sm text-[#26215C]">
-              {backupCodes.map((backupCode, index) => (
-                <div key={index} className="rounded bg-white px-3 py-2 text-center">
-                  {showBackupCodes ? backupCode : '••••••••'}
-                </div>
-              ))}
-            </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 rounded-[16px] bg-[#EEEDFE] p-4">
+            {backupCodes.map((backupCode, index) => (
+              <code
+                key={index}
+                className="rounded-lg bg-white px-3 py-2 text-center text-sm font-mono text-[#26215C]"
+              >
+                {showBackupCodes ? backupCode : '••••••••'}
+              </code>
+            ))}
           </div>
 
           <div className="mt-4 flex gap-3">
             <button
-              type="button"
               onClick={downloadBackupCodes}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#D3D0F2] bg-white px-4 py-2.5 text-sm font-semibold text-[#26215C] transition hover:bg-[#EEEDFE]"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#D3D0F2] px-4 py-2 text-sm font-semibold text-[#26215C] transition hover:bg-[#EEEDFE]"
             >
               <Download className="h-4 w-4" />
               Download
             </button>
             <button
-              type="button"
               onClick={copyBackupCodes}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#D3D0F2] bg-white px-4 py-2.5 text-sm font-semibold text-[#26215C] transition hover:bg-[#EEEDFE]"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#D3D0F2] px-4 py-2 text-sm font-semibold text-[#26215C] transition hover:bg-[#EEEDFE]"
             >
               <Copy className="h-4 w-4" />
-              {copied ? 'Copied!' : 'Copy'}
+              {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
         </div>
 
         <button
-          type="button"
-          onClick={handleDisable}
+          onClick={openDisableDialog}
           disabled={isLoading}
-          className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+          className="w-full rounded-xl border border-red-200 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
         >
-          {isLoading ? 'Disabling...' : 'Disable Two-Factor Authentication'}
+          Disable Two-Factor Authentication
         </button>
+
+        {disableDialog}
       </div>
     );
   }
@@ -300,14 +412,13 @@ export function TwoFactorSetup() {
         <div>
           <p className="font-semibold text-red-900">Setup Failed</p>
           <p className="mt-1 text-sm text-red-700">
-            We couldn't start two-factor authentication setup. Please try again.
+            We couldn&apos;t start two-factor authentication setup. Please try again.
           </p>
         </div>
       </div>
       <button
-        type="button"
         onClick={() => setStep('inactive')}
-        className="w-full rounded-xl bg-[#7F77DD] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#3C3489]"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#7F77DD] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#3C3489]"
       >
         Try Again
       </button>

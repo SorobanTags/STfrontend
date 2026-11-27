@@ -98,6 +98,46 @@ describe('LoginPage integration', () => {
     expect(localStorage.getItem('sorobanlard_token')).toBe('token-123');
   });
 
+  it('redirects to the callbackUrl after a successful sign-in', async () => {
+    const user = userEvent.setup();
+    mockGetSearchParam.mockImplementation((key: string) =>
+      key === 'callbackUrl' ? '/dashboard/my-courses' : null,
+    );
+    loginWithEmailMock.mockResolvedValue({
+      accessToken: 'token-123',
+      user: { id: 'user-1', email: 'student@example.com' },
+    } as any);
+    render(<LoginPage />);
+
+    await user.type(screen.getByLabelText(/email/i), 'student@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /login/i }));
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/dashboard/my-courses');
+    });
+    expect(mockPush).not.toHaveBeenCalledWith('/dashboard');
+  });
+
+  it('redirects to the default destination when no callbackUrl is present', async () => {
+    const user = userEvent.setup();
+    mockGetSearchParam.mockReturnValue(null);
+    loginWithEmailMock.mockResolvedValue({
+      accessToken: 'token-123',
+      user: { id: 'user-1', email: 'student@example.com' },
+    } as any);
+    render(<LoginPage />);
+
+    await user.type(screen.getByLabelText(/email/i), 'student@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /login/i }));
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/dashboard');
+    });
+    expect(mockPush).toHaveBeenCalledTimes(1);
+  });
+
   it('shows an inline error message when the API rejects with invalid credentials', async () => {
     const user = userEvent.setup();
     const error = new AxiosError(
@@ -121,5 +161,46 @@ describe('LoginPage integration', () => {
     await user.click(screen.getByRole('button', { name: /login/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid credentials');
+  });
+
+  it('shows the server-provided message for an AxiosError with a message body', async () => {
+    const user = userEvent.setup();
+    const error = new AxiosError(
+      'Request failed',
+      'ERR_BAD_REQUEST',
+      undefined,
+      undefined,
+      {
+        status: 429,
+        data: { message: 'Too many login attempts. Try again later.' },
+        statusText: 'Too Many Requests',
+        headers: {},
+        config: {},
+      } as any,
+    );
+    loginWithEmailMock.mockRejectedValue(error);
+    render(<LoginPage />);
+
+    await user.type(screen.getByLabelText(/email/i), 'student@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /login/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Too many login attempts. Try again later.',
+    );
+  });
+
+  it('shows the generic fallback message for a non-Axios error', async () => {
+    const user = userEvent.setup();
+    loginWithEmailMock.mockRejectedValue(new Error('Network down'));
+    render(<LoginPage />);
+
+    await user.type(screen.getByLabelText(/email/i), 'student@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /login/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Something went wrong. Please try again.',
+    );
   });
 });

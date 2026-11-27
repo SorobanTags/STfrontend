@@ -18,6 +18,17 @@ function CheckoutHarness() {
 }
 
 describe('CheckoutErrorBoundary', () => {
+  it('renders children when no error is thrown', () => {
+    render(
+      <CheckoutErrorBoundary onReset={() => {}}>
+        <CrashingCheckout crash={false} />
+      </CheckoutErrorBoundary>,
+    );
+
+    expect(screen.getByText('Checkout step 1')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('shows recovery actions and restarts checkout at step one', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.useFakeTimers();

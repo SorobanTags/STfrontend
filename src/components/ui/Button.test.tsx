@@ -110,6 +110,35 @@ describe('Button', () => {
       render(<Button isLoading>Submit</Button>);
       expect(screen.queryByText(/submit/i)).not.toBeInTheDocument();
     });
+
+    it('renders default loading text when loadingText is not provided', () => {
+      render(<Button isLoading>Submit</Button>);
+      expect(screen.getByText('Loading...')).toBeInTheDocument();
+    });
+
+    it('renders loadingText instead of children while loading', () => {
+      render(
+        <Button isLoading loadingText="Saving...">
+          Save Changes
+        </Button>,
+      );
+      expect(screen.getByText('Saving...')).toBeInTheDocument();
+      expect(screen.queryByText('Save Changes')).not.toBeInTheDocument();
+    });
+
+    it('is disabled and ignores clicks while loading', async () => {
+      const handleClick = vi.fn();
+      const user = userEvent.setup();
+      render(
+        <Button isLoading onClick={handleClick}>
+          Submit
+        </Button>,
+      );
+      const button = screen.getByRole('button', { name: /loading.../i });
+      expect(button).toBeDisabled();
+      await user.click(button);
+      expect(handleClick).not.toHaveBeenCalled();
+    });
   });
 
   describe('Icon Support', () => {
@@ -126,6 +155,36 @@ describe('Button', () => {
       const button = screen.getByRole('button', { name: /with icon/i });
       // Icon should appear after children
       expect(button.innerHTML).toContain('★');
+    });
+
+    it('renders icon before the label when iconPosition is left', () => {
+      render(
+        <Button icon={<span data-testid="test-icon">★</span>} iconPosition="left">
+          Label
+        </Button>,
+      );
+      const button = screen.getByRole('button', { name: /label/i });
+      const icon = screen.getByTestId('test-icon');
+      const label = screen.getByText('Label');
+      expect(button.firstChild).toContainElement(icon);
+      expect(
+        icon.compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('renders icon after the label when iconPosition is right', () => {
+      render(
+        <Button icon={<span data-testid="test-icon">★</span>} iconPosition="right">
+          Label
+        </Button>,
+      );
+      const button = screen.getByRole('button', { name: /label/i });
+      const icon = screen.getByTestId('test-icon');
+      const label = screen.getByText('Label');
+      expect(button.lastChild).toContainElement(icon);
+      expect(
+        label.compareDocumentPosition(icon) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
     });
   });
 

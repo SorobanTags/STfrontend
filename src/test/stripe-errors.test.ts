@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { friendlyStripeError } from '@/lib/stripe/errors';
+import { FALLBACK_MESSAGE, friendlyStripeError } from '@/lib/stripe/errors';
 import { PaymentDeclinedError, simulatePaymentConfirmation } from '@/lib/stripe/simulate';
 import type {
   CardDeclinedError,
   StripeDeclineCode,
   StripeErrorCode,
+  StripeErrorType,
   TypedStripeError,
 } from '@/lib/stripe/types';
 
@@ -136,4 +137,105 @@ describe('TypedStripeError discriminated unions', () => {
 
     expect(friendlyStripeError(error)).toBe('Your postal code is incomplete.');
   });
+});
+
+// ── Message-table coverage ───────────────────────────────────────────────────
+//
+// The literal unions in types.ts and the message tables in errors.ts must stay
+// in sync. The arrays below are checked against the unions at compile time, so
+// adding a code to a union without listing it here fails type-checking, and
+// the loops fail at runtime if a listed code has no message.
+
+/** `true` only when every member of `Union` appears in `Listed`. */
+type CoversUnion<Union, Listed> = [Exclude<Union, Listed>] extends [never] ? true : false;
+
+const declineCodes = [
+  'insufficient_funds',
+  'lost_card',
+  'stolen_card',
+  'expired_card',
+  'incorrect_cvc',
+  'card_velocity_exceeded',
+  'currency_not_supported',
+  'do_not_honor',
+  'transaction_not_allowed',
+  'fraudulent',
+  'generic_decline',
+  'authentication_required',
+  'card_not_supported',
+  'incorrect_number',
+  'invalid_account',
+  'pickup_card',
+  'processing_error',
+  'try_again_later',
+  'withdrawal_count_limit_exceeded',
+] as const satisfies readonly StripeDeclineCode[];
+
+const errorCodes = [
+  'card_declined',
+  'expired_card',
+  'incorrect_cvc',
+  'invalid_cvc',
+  'incorrect_number',
+  'invalid_number',
+  'invalid_expiry_month',
+  'invalid_expiry_year',
+  'incomplete_number',
+  'incomplete_expiry',
+  'incomplete_cvc',
+  'processing_error',
+  'authentication_required',
+  'rate_limit',
+  'api_key_expired',
+  'card_decline_rate_limit_exceeded',
+  'payment_intent_authentication_failure',
+] as const satisfies readonly StripeErrorCode[];
+
+const infrastructureErrorTypes = [
+  'api_connection_error',
+  'api_error',
+  'authentication_error',
+  'idempotency_error',
+  'invalid_request_error',
+] as const satisfies readonly StripeErrorType[];
+
+const allDeclineCodesListed: CoversUnion<StripeDeclineCode, (typeof declineCodes)[number]> = true;
+const allErrorCodesListed: CoversUnion<StripeErrorCode, (typeof errorCodes)[number]> = true;
+
+const NEUTRAL_INFRASTRUCTURE_MESSAGE =
+  'Card payments are temporarily unavailable. Please try again in a moment or contact support.';
+
+describe('Stripe message tables', () => {
+  it('lists every StripeDeclineCode and StripeErrorCode', () => {
+    expect(allDeclineCodesListed).toBe(true);
+    expect(allErrorCodesListed).toBe(true);
+  });
+
+  it.each(declineCodes)('maps decline code %s to a non-empty message', (declineCode) => {
+    const message = friendlyStripeError({ code: 'card_declined', decline_code: declineCode });
+
+    expect(message.trim()).not.toBe('');
+    expect(message).not.toBe(FALLBACK_MESSAGE);
+  });
+
+  it.each(errorCodes)('maps error code %s to a non-empty message', (code) => {
+    const message = friendlyStripeError({ code });
+
+    expect(message.trim()).not.toBe('');
+    expect(message).not.toBe(FALLBACK_MESSAGE);
+  });
+
+  it('returns the Stripe-supplied message verbatim for validation_error', () => {
+    expect(friendlyStripeError({ type: 'validation_error', message: 'x' })).toBe('x');
+  });
+
+  it.each(infrastructureErrorTypes)(
+    'returns the neutral fallback for infrastructure error type %s',
+    (type) => {
+      const message = friendlyStripeError({ type, message: 'No such API key: sk_test_123' });
+
+      expect(message).toBe(NEUTRAL_INFRASTRUCTURE_MESSAGE);
+      expect(message).not.toContain('sk_test_123');
+    },
+  );
 });

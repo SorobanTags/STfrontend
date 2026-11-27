@@ -199,4 +199,47 @@ describe('useCountdown', () => {
     });
     expect(onExpire).toHaveBeenCalledTimes(2);
   });
+
+  it('clamps to zero and never goes negative when the target is in the past', () => {
+    const { result } = renderHook(() => useCountdown({ seconds: 5 }));
+
+    act(() => {
+      hideTabFor(60_000);
+    });
+    expect(result.current.secondsLeft).toBe(0);
+
+    act(() => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(result.current.secondsLeft).toBe(0);
+    expect(result.current.isExpired).toBe(true);
+  });
+
+  it('clears its interval when unmounted', () => {
+    const { unmount } = renderHook(() => useCountdown({ seconds: 30 }));
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('recomputes the remaining time when the target changes', () => {
+    const { result, rerender } = renderHook(
+      ({ seconds }) => useCountdown({ seconds }),
+      { initialProps: { seconds: 10 } },
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(4_000);
+    });
+    expect(result.current.secondsLeft).toBe(6);
+
+    rerender({ seconds: 20 });
+    expect(result.current.secondsLeft).toBe(20);
+
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+    expect(result.current.secondsLeft).toBe(15);
+  });
 });

@@ -17,7 +17,7 @@ import type { Course } from '@/types';
 import Link from 'next/link';
 
 function QuickStatsSection() {
-  const [stats, setStats] = useState<Array<{ label: string; value: string | number }>>([]);
+  const [stats, setStats] = useState<Array<{ id: string; label: string; value: string | number }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,16 +26,16 @@ function QuickStatsSection() {
       .then((res) => {
         const enrollments = res.data;
         setStats([
-          { label: 'Courses', value: enrollments.length },
-          { label: 'Completed', value: enrollments.filter((e) => e.status === 'COMPLETED').length },
-          { label: 'Certificates', value: enrollments.filter((e) => e.progressPercent === 100).length },
+          { id: 'courses', label: 'Courses', value: enrollments.length },
+          { id: 'completed', label: 'Completed', value: enrollments.filter((e) => e.status === 'COMPLETED').length },
+          { id: 'certificates', label: 'Certificates', value: enrollments.filter((e) => e.progressPercent === 100).length },
         ]);
       })
       .catch(() => {
         setStats([
-          { label: 'Courses', value: 0 },
-          { label: 'Completed', value: 0 },
-          { label: 'Certificates', value: 0 },
+          { id: 'courses', label: 'Courses', value: 0 },
+          { id: 'completed', label: 'Completed', value: 0 },
+          { id: 'certificates', label: 'Certificates', value: 0 },
         ]);
       })
       .finally(() => setLoading(false));

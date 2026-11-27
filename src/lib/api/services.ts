@@ -533,22 +533,26 @@ export const usersApi = {
     return data.data;
   },
   deleteAccount: async (password: string): Promise<void> => {
-    await apiClient.delete('/users/me', { data: { password } });
+    await apiClient.delete("/users/me", { data: { password } });
   },
   getInstructorStats: async () => {
     const { data } = await apiClient.get("/users/me/instructor-stats");
     return data.data;
   },
-  requestDataExport: async (): Promise<{ message: string; downloadUrl?: string }> => {
+  requestDataExport: async (): Promise<{
+    message: string;
+    downloadUrl?: string;
+  }> => {
     try {
-      const { data } = await apiClient.post<ApiResponse<{ message: string; downloadUrl?: string }>>(
-        '/users/me/export-data',
-      );
+      const { data } = await apiClient.post<
+        ApiResponse<{ message: string; downloadUrl?: string }>
+      >("/users/me/export-data");
       return data.data;
     } catch {
       // Fallback response when endpoint is mock / offline
       return {
-        message: "Your data export is being prepared, you'll receive an email when ready",
+        message:
+          "Your data export is being prepared, you'll receive an email when ready",
       };
     }
   },
@@ -703,13 +707,16 @@ export const promoCodesApi = {
 // ----------------------------------------------------------
 // Falls back to per-user localStorage until the payments service exposes
 // these endpoints. Only Stripe's non-sensitive card summary is stored.
-const paymentMethodsStorageKey = () => `${PAYMENT_METHODS_STORAGE_KEY}:${currentUserKey()}`;
-const readSavedPaymentMethods = () => readStorage<SavedPaymentMethod[]>(paymentMethodsStorageKey(), []);
+const paymentMethodsStorageKey = () =>
+  `${PAYMENT_METHODS_STORAGE_KEY}:${currentUserKey()}`;
+const readSavedPaymentMethods = () =>
+  readStorage<SavedPaymentMethod[]>(paymentMethodsStorageKey(), []);
 const writeSavedPaymentMethods = (methods: SavedPaymentMethod[]) => {
   // Exactly one default whenever any card is saved.
-  const withDefault = methods.length > 0 && !methods.some((m) => m.isDefault)
-    ? methods.map((m, index) => ({ ...m, isDefault: index === 0 }))
-    : methods;
+  const withDefault =
+    methods.length > 0 && !methods.some((m) => m.isDefault)
+      ? methods.map((m, index) => ({ ...m, isDefault: index === 0 }))
+      : methods;
   writeStorage(paymentMethodsStorageKey(), withDefault);
   return withDefault;
 };
@@ -717,18 +724,26 @@ const writeSavedPaymentMethods = (methods: SavedPaymentMethod[]) => {
 export const paymentMethodsApi = {
   list: async (): Promise<SavedPaymentMethod[]> => {
     try {
-      const { data } = await apiClient.get<ApiResponse<SavedPaymentMethod[]>>('/payment-methods');
+      const { data } =
+        await apiClient.get<ApiResponse<SavedPaymentMethod[]>>(
+          "/payment-methods",
+        );
       return data.data;
     } catch {
       return readSavedPaymentMethods();
     }
   },
 
-  add: async (payload: Omit<SavedPaymentMethod, 'isDefault' | 'createdAt'>): Promise<SavedPaymentMethod> => {
+  add: async (
+    payload: Omit<SavedPaymentMethod, "isDefault" | "createdAt">,
+  ): Promise<SavedPaymentMethod> => {
     try {
-      const { data } = await apiClient.post<ApiResponse<SavedPaymentMethod>>('/payment-methods', {
-        paymentMethodId: payload.id,
-      });
+      const { data } = await apiClient.post<ApiResponse<SavedPaymentMethod>>(
+        "/payment-methods",
+        {
+          paymentMethodId: payload.id,
+        },
+      );
       return data.data;
     } catch {
       const stored = readSavedPaymentMethods();
@@ -737,7 +752,10 @@ export const paymentMethodsApi = {
         isDefault: stored.length === 0,
         createdAt: new Date().toISOString(),
       };
-      writeSavedPaymentMethods([...stored.filter((m) => m.id !== method.id), method]);
+      writeSavedPaymentMethods([
+        ...stored.filter((m) => m.id !== method.id),
+        method,
+      ]);
       return method;
     }
   },
@@ -746,7 +764,9 @@ export const paymentMethodsApi = {
     try {
       await apiClient.delete(`/payment-methods/${paymentMethodId}`);
     } catch {
-      writeSavedPaymentMethods(readSavedPaymentMethods().filter((m) => m.id !== paymentMethodId));
+      writeSavedPaymentMethods(
+        readSavedPaymentMethods().filter((m) => m.id !== paymentMethodId),
+      );
     }
   },
 
@@ -755,7 +775,10 @@ export const paymentMethodsApi = {
       await apiClient.patch(`/payment-methods/${paymentMethodId}/default`);
     } catch {
       writeSavedPaymentMethods(
-        readSavedPaymentMethods().map((m) => ({ ...m, isDefault: m.id === paymentMethodId })),
+        readSavedPaymentMethods().map((m) => ({
+          ...m,
+          isDefault: m.id === paymentMethodId,
+        })),
       );
     }
   },
@@ -771,10 +794,9 @@ export const contactApi = {
     subject: string;
     message: string;
   }) => {
-    const { data } = await apiClient.post<ApiResponse<{ id: string; createdAt: string }>>(
-      '/contact',
-      payload,
-    );
+    const { data } = await apiClient.post<
+      ApiResponse<{ id: string; createdAt: string }>
+    >("/contact", payload);
     return data.data;
   },
 };
@@ -797,32 +819,31 @@ export const newsletterApi = {
 // ----------------------------------------------------------
 export const twoFactorApi = {
   setupInitiate: async (): Promise<{ qrCode: string; secret: string }> => {
-    const { data } = await apiClient.post<ApiResponse<{ qrCode: string; secret: string }>>(
-      '/2fa/setup',
-    );
+    const { data } =
+      await apiClient.post<ApiResponse<{ qrCode: string; secret: string }>>(
+        "/2fa/setup",
+      );
     return data.data;
   },
 
   setupVerify: async (code: string): Promise<{ backupCodes: string[] }> => {
-    const { data } = await apiClient.post<ApiResponse<{ backupCodes: string[] }>>(
-      '/2fa/verify',
-      { code },
-    );
+    const { data } = await apiClient.post<
+      ApiResponse<{ backupCodes: string[] }>
+    >("/2fa/verify", { code });
     return data.data;
   },
 
   disable: async (code: string): Promise<{ success: boolean }> => {
     const { data } = await apiClient.post<ApiResponse<{ success: boolean }>>(
-      '/2fa/disable',
+      "/2fa/disable",
       { code },
     );
     return data.data;
   },
 
   getStatus: async (): Promise<{ enabled: boolean }> => {
-    const { data } = await apiClient.get<ApiResponse<{ enabled: boolean }>>(
-      '/2fa/status',
-    );
+    const { data } =
+      await apiClient.get<ApiResponse<{ enabled: boolean }>>("/2fa/status");
     return data.data;
   },
 };
@@ -834,7 +855,7 @@ export const giftsApi = {
     message?: string;
     deliveryDate: string;
   }): Promise<Gift> => {
-    const { data } = await apiClient.post<ApiResponse<Gift>>('/gifts', payload);
+    const { data } = await apiClient.post<ApiResponse<Gift>>("/gifts", payload);
     return data.data;
   },
 
@@ -853,7 +874,7 @@ export const giftsApi = {
 export const leaderboardApi = {
   get: async (period: LeaderboardPeriod): Promise<LeaderboardResponse> => {
     const { data } = await apiClient.get<ApiResponse<LeaderboardResponse>>(
-      '/leaderboard',
+      "/leaderboard",
       { params: { period } },
     );
     return data.data;
@@ -862,9 +883,12 @@ export const leaderboardApi = {
 
 export const tagsApi = {
   search: async (query: string): Promise<string[]> => {
-    const { data } = await apiClient.get<ApiResponse<string[]>>('/tags/search', {
-      params: { query },
-    });
+    const { data } = await apiClient.get<ApiResponse<string[]>>(
+      "/tags/search",
+      {
+        params: { query },
+      },
+    );
     return data.data;
   },
 };

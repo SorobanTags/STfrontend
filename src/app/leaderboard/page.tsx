@@ -23,6 +23,11 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState<string | null>(null);
 
+  // Bumped by Retry. `setPeriod((p) => p)` looks like a re-request but sets the
+  // same value, so React bails out and the effect below never re-runs — the
+  // button did nothing. A counter is a real dependency change for the same period.
+  const [reloadKey, setReloadKey] = useState(0);
+
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -31,7 +36,7 @@ export default function LeaderboardPage() {
       .then(setData)
       .catch(() => setError('Failed to load leaderboard. Please try again.'))
       .finally(() => setLoading(false));
-  }, [period]);
+  }, [period, reloadKey]);
 
   // Derive current-user entry from API response or inject a placeholder
   const currentUserEntry: LeaderboardEntry | null =
@@ -122,7 +127,7 @@ export default function LeaderboardPage() {
             <button
               type="button"
               className="btn-secondary mt-4 text-sm"
-              onClick={() => setPeriod((p) => p)}
+              onClick={() => setReloadKey((key) => key + 1)}
             >
               Retry
             </button>

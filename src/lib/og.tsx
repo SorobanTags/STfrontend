@@ -104,7 +104,7 @@ export function renderOgImage({
 }
 
 /** Trims to a whole word so long course titles do not blow out the card. */
-function truncate(value: string, max: number): string {
+export function truncate(value: string, max: number): string {
   if (value.length <= max) return value;
   const clipped = value.slice(0, max);
   const lastSpace = clipped.lastIndexOf(' ');

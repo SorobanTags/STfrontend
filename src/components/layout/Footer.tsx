@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React from 'react';
 import Link from 'next/link';
@@ -7,18 +7,19 @@ import { newsletterApi } from '@/lib/api/services';
 
 // ─── Newsletter form ──────────────────────────────────────────────────────────
 
-type NewsletterStatus = 'idle' | 'loading' | 'success' | 'error';
+type NewsletterStatus = "idle" | "loading" | "success" | "error";
 
 function NewsletterForm() {
-  const [email, setEmail] = useState('');
-  const [validationError, setValidationError] = useState('');
-  const [status, setStatus] = useState<NewsletterStatus>('idle');
-  const [serverError, setServerError] = useState('');
+  const [email, setEmail] = useState("");
+  const [validationError, setValidationError] = useState("");
+  const [status, setStatus] = useState<NewsletterStatus>("idle");
+  const [serverError, setServerError] = useState("");
 
   const validate = (value: string) => {
-    if (!value.trim()) return 'Email address is required.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Please enter a valid email address.';
-    return '';
+    if (!value.trim()) return "Email address is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+      return "Please enter a valid email address.";
+    return "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,8 +29,9 @@ function NewsletterForm() {
       setValidationError(error);
       return;
     }
-    setValidationError('');
-    setStatus('loading');
+    setValidationError("");
+    setStatus("loading");
+    setServerError("");
     try {
       await newsletterApi.subscribe(email.trim());
       setStatus('success');
@@ -39,16 +41,21 @@ function NewsletterForm() {
     }
   };
 
-  if (status === 'success') {
+  if (status === "success") {
     return (
       <p className="text-sm font-medium text-[#7F77DD]" role="status">
-        You&apos;re in! Thanks for subscribing — great things are heading your way.
+        You&apos;re in! Thanks for subscribing — great things are heading your
+        way.
       </p>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3 sm:flex-row sm:items-start">
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      className="flex flex-col gap-3 sm:flex-row sm:items-start"
+    >
       <div className="flex flex-col gap-1">
         <label htmlFor="footer-newsletter-email" className="sr-only">
           Email address
@@ -62,11 +69,17 @@ function NewsletterForm() {
           onChange={(e) => {
             setEmail(e.target.value);
             if (validationError) setValidationError(validate(e.target.value));
-            if (status === 'error') setStatus('idle');
+            if (status === "error") setStatus("idle");
           }}
-          aria-describedby={validationError ? 'nl-email-error' : serverError ? 'nl-server-error' : undefined}
-          aria-invalid={!!(validationError || status === 'error')}
-          disabled={status === 'loading'}
+          aria-describedby={
+            validationError
+              ? "nl-email-error"
+              : serverError
+                ? "nl-server-error"
+                : undefined
+          }
+          aria-invalid={!!(validationError || status === "error")}
+          disabled={status === "loading"}
           className="w-64 rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder-slate-400 focus:border-[#7F77DD] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7F77DD] disabled:opacity-60"
         />
         {validationError && (
@@ -74,18 +87,22 @@ function NewsletterForm() {
             {validationError}
           </p>
         )}
-        {status === 'error' && !validationError && (
-          <p id="nl-server-error" role="alert" className="text-xs text-rose-400">
+        {status === "error" && !validationError && (
+          <p
+            id="nl-server-error"
+            role="alert"
+            className="text-xs text-rose-400"
+          >
             {serverError}
           </p>
         )}
       </div>
       <button
         type="submit"
-        disabled={status === 'loading'}
+        disabled={status === "loading"}
         className="inline-flex items-center justify-center rounded-lg bg-[#7F77DD] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#6B63C9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7F77DD] disabled:opacity-60"
       >
-        {status === 'loading' ? 'Subscribing…' : 'Subscribe'}
+        {status === "loading" ? "Subscribing…" : "Subscribe"}
       </button>
     </form>
   );
@@ -95,70 +112,70 @@ function NewsletterForm() {
 
 const FOOTER_COLUMNS = [
   {
-    title: 'About SorobanLard',
+    title: "About SorobanLard",
     links: [
-      { label: 'Our story', href: '/about' },
-      { label: 'Teach on SorobanLard', href: '/teach' },
-      { label: 'Team plans', href: '/teams' },
-      { label: 'Careers', href: '/#careers' },
-      { label: 'Partner with us', href: '/#partners' },
+      { label: "Our story", href: "/about" },
+      { label: "Teach on SorobanLard", href: "/teach" },
+      { label: "Team plans", href: "/teams" },
+      { label: "Careers", href: "/#careers" },
+      { label: "Partner with us", href: "/#partners" },
     ],
   },
   {
-    title: 'Courses',
+    title: "Courses",
     links: [
-      { label: 'All courses', href: '/dashboard/courses' },
-      { label: 'Free courses', href: '/courses/free' },
-      { label: 'Tailoring', href: '/dashboard/courses?category=tailoring' },
-      { label: 'Makeup Artistry', href: '/dashboard/courses?category=makeup' },
-      { label: 'Baking', href: '/dashboard/courses?category=baking' },
-      { label: 'Photography', href: '/dashboard/courses?category=photography' },
+      { label: "All courses", href: "/dashboard/courses" },
+      { label: "Free courses", href: "/courses/free" },
+      { label: "Tailoring", href: "/dashboard/courses?category=tailoring" },
+      { label: "Makeup Artistry", href: "/dashboard/courses?category=makeup" },
+      { label: "Baking", href: "/dashboard/courses?category=baking" },
+      { label: "Photography", href: "/dashboard/courses?category=photography" },
     ],
   },
   {
-    title: 'Support',
+    title: "Support",
     links: [
-      { label: 'Help center', href: '/help' },
-      { label: 'Contact us', href: '/contact' },
-      { label: 'Community', href: '/#community' },
-      { label: 'FAQs', href: '/#faqs' },
+      { label: "Help center", href: "/help" },
+      { label: "Contact us", href: "/contact" },
+      { label: "Community", href: "/#community" },
+      { label: "FAQs", href: "/#faqs" },
     ],
   },
   {
-    title: 'Legal',
+    title: "Legal",
     links: [
-      { label: 'Terms of service', href: '/terms' },
-      { label: 'Privacy policy', href: '/privacy' },
-      { label: 'Cookie policy', href: '/privacy#cookies' },
-      { label: 'Accessibility', href: '/#accessibility' },
+      { label: "Terms of service", href: "/terms" },
+      { label: "Privacy policy", href: "/privacy" },
+      { label: "Cookie policy", href: "/privacy#cookies" },
+      { label: "Accessibility", href: "/#accessibility" },
     ],
   },
 ] as const;
 
 const SOCIAL_LINKS = [
   {
-    label: 'LinkedIn',
-    href: 'https://linkedin.com/company/sorobanlard',
+    label: "LinkedIn",
+    href: "https://linkedin.com/company/sorobanlard",
     // LinkedIn logo path
-    icon: 'M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z M4 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+    icon: "M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z M4 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
   },
   {
-    label: 'X (Twitter)',
-    href: 'https://x.com/sorobanlard',
+    label: "X (Twitter)",
+    href: "https://x.com/sorobanlard",
     // X / Twitter logo
-    icon: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z',
+    icon: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z",
   },
   {
-    label: 'YouTube',
-    href: 'https://youtube.com/@sorobanlard',
+    label: "YouTube",
+    href: "https://youtube.com/@sorobanlard",
     // YouTube logo path
-    icon: 'M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29.94 29.94 0 0 0 1 12a29.94 29.94 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29.94 29.94 0 0 0 23 12a29.94 29.94 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z',
+    icon: "M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29.94 29.94 0 0 0 1 12a29.94 29.94 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29.94 29.94 0 0 0 23 12a29.94 29.94 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z",
   },
   {
-    label: 'Instagram',
-    href: 'https://instagram.com/sorobanlard',
+    label: "Instagram",
+    href: "https://instagram.com/sorobanlard",
     // Instagram logo path
-    icon: 'M17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5Zm-5 14a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm5.5-9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z',
+    icon: "M17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5Zm-5 14a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm5.5-9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z",
   },
 ] as const;
 
@@ -172,7 +189,6 @@ export function Footer() {
   return (
     <footer className="bg-[#26215C] text-white" aria-label="Site footer">
       <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-10">
-
         {/* ── Brand + Social column (always visible, above columns on mobile) ── */}
         <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between lg:hidden">
           <div className="space-y-1">
@@ -180,7 +196,8 @@ export function Footer() {
               SorobanLard
             </p>
             <p className="max-w-xs text-sm leading-relaxed text-slate-300">
-              Empowering ambitious learners across Africa with practical online courses.
+              Empowering ambitious learners across Africa with practical online
+              courses.
             </p>
           </div>
           <SocialRow />
@@ -195,8 +212,9 @@ export function Footer() {
                 SorobanLard
               </p>
               <p className="text-sm leading-7 text-slate-300">
-                SorobanLard empowers ambitious learners across Africa with practical online courses
-                in tailoring, makeup, baking, and photography.
+                SorobanLard empowers ambitious learners across Africa with
+                practical online courses in tailoring, makeup, baking, and
+                photography.
               </p>
             </div>
             <div className="space-y-3">
@@ -242,11 +260,15 @@ export function Footer() {
                   className="flex w-full items-center justify-between gap-4 py-4 text-left"
                   onClick={() => setOpenIndex(isOpen ? null : index)}
                 >
-                  <span className="text-sm font-semibold text-white">{col.title}</span>
+                  <span className="text-sm font-semibold text-white">
+                    {col.title}
+                  </span>
                   <span
                     className="text-lg leading-none text-slate-400 transition-transform duration-300"
                     aria-hidden="true"
-                    style={{ transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}
+                    style={{
+                      transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
+                    }}
                   >
                     +
                   </span>
@@ -255,7 +277,7 @@ export function Footer() {
                   id={`footer-section-${index}`}
                   className="overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out"
                   style={{
-                    maxHeight: isOpen ? '16rem' : '0',
+                    maxHeight: isOpen ? "16rem" : "0",
                     opacity: isOpen ? 1 : 0,
                   }}
                 >
@@ -285,7 +307,9 @@ export function Footer() {
           <h2 className="mt-2 text-lg font-semibold text-white">
             Get course drops and career tips in your inbox
           </h2>
-          <p className="mt-1 text-sm text-slate-400">No spam, unsubscribe any time.</p>
+          <p className="mt-1 text-sm text-slate-400">
+            No spam, unsubscribe any time.
+          </p>
           <div className="mt-4">
             <NewsletterForm />
           </div>
@@ -310,7 +334,11 @@ export function Footer() {
 
 function SocialRow() {
   return (
-    <div className="flex items-center gap-3" role="group" aria-label="Social media links">
+    <div
+      className="flex items-center gap-3"
+      role="group"
+      aria-label="Social media links"
+    >
       {SOCIAL_LINKS.map((social) => (
         <a
           key={social.label}
